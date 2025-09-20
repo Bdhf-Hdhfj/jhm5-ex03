@@ -13,6 +13,7 @@
 
 export default {
 	async fetch(request, env, ctx): Promise<Response> {
-		return new Response('Hello World!');
+		//Try to serve static assets first
+		return env.ASSETS.fetch(request);
 	},
 } satisfies ExportedHandler<Env>;
