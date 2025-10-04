@@ -1,0 +1,938 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HKDSE 成績分析器</title>
+    <link rel="stylesheet" href="/global.css">
+    <style>
+        /* ================================ */
+        /* 極簡主義設計 - 黑白配色 */
+        /* ================================ */
+        
+        body { 
+            background: white;
+            padding-top: 60px; /* Space for back button */
+        }
+        
+        .analyzer-container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid black;
+        }
+        
+        .header h1 {
+            font-size: 32px;
+            margin: 0 0 8px 0;
+        }
+        
+        .header p {
+            color: #666;
+            margin: 8px 0;
+        }
+        
+        .stats-row {
+            display: flex;
+            justify-content: center;
+            gap: 24px;
+            margin-top: 16px;
+            font-size: 14px;
+            color: #666;
+        }
+        
+        /* ================================ */
+        /* 表單樣式 - 統一高度44px */
+        /* ================================ */
+        
+        .form-section {
+            background: white;
+            border: 2px solid black;
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+        
+        .form-section h3 {
+            font-size: 18px;
+            margin: 0 0 16px 0;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #e5e5e5;
+        }
+        
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+        
+        .form-field {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .form-field label {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 6px;
+            font-weight: 500;
+        }
+        
+        /* 統一輸入控件高度 */
+        .form-field select,
+        .form-field input {
+            height: 44px;
+            padding: 0 12px;
+            border: 2px solid black;
+            background: white;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.15s;
+            appearance: none;
+            background-image: url('data:image/svg+xml;utf8,<svg fill="black" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>');
+            background-repeat: no-repeat;
+            background-position: right 8px center;
+            background-size: 20px;
+        }
+        
+        .form-field select:hover,
+        .form-field input:hover {
+            background-color: #f5f5f5;
+        }
+        
+        .form-field select:focus,
+        .form-field input:focus {
+            outline: none;
+            background-color: #f5f5f5;
+        }
+        
+        /* 選修科目區 */
+        .elective-row {
+            display: grid;
+            grid-template-columns: 2fr 1fr auto;
+            gap: 16px;
+            margin-bottom: 16px;
+            align-items: end;
+        }
+        
+        .elective-row select {
+            height: 44px;
+            padding: 0 12px;
+            border: 2px solid black;
+            background: white;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.15s;
+            appearance: none;
+            background-image: url('data:image/svg+xml;utf8,<svg fill="black" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>');
+            background-repeat: no-repeat;
+            background-position: right 8px center;
+            background-size: 20px;
+        }
+        
+        .elective-row select:hover {
+            background-color: #f5f5f5;
+        }
+        
+        .elective-row select:focus {
+            outline: none;
+            background-color: #f5f5f5;
+        }
+        
+        .btn-remove {
+            height: 44px;
+            padding: 0 16px;
+            border: 2px solid black;
+            background: white;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: 500;
+            transition: all 0.15s;
+        }
+        
+        .btn-remove:hover {
+            background: black;
+            color: white;
+        }
+        
+        .btn-add {
+            display: inline-block;
+            padding: 12px 24px;
+            border: 2px solid black;
+            background: white;
+            cursor: pointer;
+            margin-top: 12px;
+            font-size: 15px;
+            font-weight: 500;
+            transition: all 0.15s;
+        }
+        
+        .btn-add:hover {
+            background: black;
+            color: white;
+            transform: translateY(-2px);
+        }
+        
+        /* 分數顯示 */
+        .score-display {
+            border: 2px solid black;
+            padding: 24px;
+            text-align: center;
+            margin-top: 24px;
+            background: white;
+        }
+        
+        .score-display .score {
+            font-size: 48px;
+            font-weight: bold;
+            margin: 0;
+        }
+        
+        .score-display .label {
+            font-size: 14px;
+            color: #666;
+            margin-top: 4px;
+        }
+        
+        .status-row {
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid #e5e5e5;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 6px 16px;
+            font-size: 14px;
+            font-weight: 500;
+            margin-left: 8px;
+        }
+        
+        .status-pass {
+            background: #059669;
+            color: white;
+        }
+        
+        .status-fail {
+            background: #dc2626;
+            color: white;
+        }
+        
+        /* 主按鈕 */
+        .btn-analyze {
+            width: 100%;
+            height: 50px;
+            border: 2px solid black;
+            background: black;
+            color: white;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 24px;
+            transition: all 0.2s;
+        }
+        
+        .btn-analyze:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        
+        .btn-analyze:disabled {
+            background: #ccc;
+            border-color: #ccc;
+            cursor: not-allowed;
+        }
+        
+        /* Loading */
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 40px;
+            border: 2px solid black;
+            background: white;
+            margin-bottom: 24px;
+        }
+        
+        .loading.show {
+            display: block;
+        }
+        
+        .spinner {
+            border: 3px solid #e5e5e5;
+            border-top: 3px solid black;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* 結果區 */
+        .results-section {
+            display: none;
+        }
+        
+        .results-section.show {
+            display: block;
+        }
+        
+        .result-card {
+            border: 2px solid black;
+            background: white;
+            padding: 32px;
+            margin-bottom: 24px;
+        }
+        
+        .percentile-display {
+            text-align: center;
+            padding: 32px;
+            background: #f5f5f5;  /* Light grey background */
+            border: 2px solid black;
+        }
+        
+        .percentile-number {
+            font-size: 72px;
+            font-weight: bold;
+            line-height: 1;
+        }
+        
+        /* Functional colors for percentile ranges */
+        .percentile-high {
+            color: #10b981; /* Green for high percentile */
+        }
+        
+        .percentile-medium {
+            color: #f59e0b; /* Orange for medium */
+        }
+        
+        .percentile-low {
+            color: #ef4444; /* Red for low */
+        }
+        
+        .percentile-label {
+            font-size: 18px;
+            margin-top: 8px;
+            color: #333;
+            font-weight: 500;
+        }
+        
+        .percentile-rank {
+            font-size: 14px;
+            margin-top: 16px;
+            color: #666;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 24px;
+            margin-top: 24px;
+        }
+        
+        .stat-item {
+            text-align: center;
+            padding: 16px;
+            border: 1px solid #e5e5e5;
+        }
+        
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+        }
+        
+        .stat-label {
+            font-size: 12px;
+            color: #666;
+            margin-top: 4px;
+        }
+        
+        /* Functional colors for stats */
+        .chance-high {
+            color: #10b981;
+            font-weight: bold;
+        }
+        
+        .chance-medium {
+            color: #f59e0b;
+            font-weight: bold;
+        }
+        
+        .chance-low {
+            color: #ef4444;
+            font-weight: bold;
+        }
+        
+        .suggestions-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .suggestions-list li {
+            padding: 16px;
+            background: #f5f5f5;
+            margin-bottom: 12px;
+            border-left: 4px solid black;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 16px;
+            margin-top: 32px;
+        }
+        
+        .action-buttons button {
+            flex: 1;
+            height: 44px;
+            border: 2px solid black;
+            background: white;
+            font-size: 15px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+        
+        .action-buttons button:hover {
+            background: black;
+            color: white;
+            transform: translateY(-2px);
+        }
+        
+        /* Mobile responsive */
+        @media (max-width: 640px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .elective-row {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+            
+            .elective-row select,
+            .elective-row .btn-remove {
+                width: 100%;
+            }
+            
+            .stats-row {
+                flex-direction: column;
+                gap: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <a href="/" class="btn back-btn">← 返回</a>
+    
+    <div class="analyzer-container">
+        <div class="header">
+            <h1>📊 HKDSE 成績分析器</h1>
+            <p>基於2024年官方數據的個人化升學分析</p>
+            <div class="stats-row">
+                <span>📚 49,026名考生</span>
+                <span>📈 即時排名</span>
+                <span>🎯 個人化建議</span>
+            </div>
+        </div>
+
+        <!-- 成績輸入表單 -->
+        <div class="form-section">
+            <h3>核心科目（必填）</h3>
+            <div class="form-grid">
+                <div class="form-field">
+                    <label for="chinese">中國語文</label>
+                    <select id="chinese" required>
+                        <option value="">選擇等級</option>
+                        <option value="5**">5**</option>
+                        <option value="5*">5*</option>
+                        <option value="5">5</option>
+                        <option value="4">4</option>
+                        <option value="3" selected>3</option>
+                        <option value="2">2</option>
+                        <option value="1">1</option>
+                        <option value="U">U</option>
+                    </select>
+                </div>
+                <div class="form-field">
+                    <label for="english">英國語文</label>
+                    <select id="english" required>
+                        <option value="">選擇等級</option>
+                        <option value="5**">5**</option>
+                        <option value="5*">5*</option>
+                        <option value="5">5</option>
+                        <option value="4">4</option>
+                        <option value="3" selected>3</option>
+                        <option value="2">2</option>
+                        <option value="1">1</option>
+                        <option value="U">U</option>
+                    </select>
+                </div>
+                <div class="form-field">
+                    <label for="math">數學</label>
+                    <select id="math" required>
+                        <option value="">選擇等級</option>
+                        <option value="5**">5**</option>
+                        <option value="5*">5*</option>
+                        <option value="5">5</option>
+                        <option value="4">4</option>
+                        <option value="3">3</option>
+                        <option value="2" selected>2</option>
+                        <option value="1">1</option>
+                        <option value="U">U</option>
+                    </select>
+                </div>
+                <div class="form-field">
+                    <label for="liberal">公民與社會發展</label>
+                    <select id="liberal" required>
+                        <option value="A" selected>達標</option>
+                        <option value="NA">未達標</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- 選修科目 -->
+        <div class="form-section">
+            <h3>選修科目（選填）</h3>
+            <div id="electives-container">
+                <!-- Dynamic electives will be added here -->
+            </div>
+            <button class="btn-add" onclick="addElective()">+ 添加選修科目</button>
+        </div>
+
+        <!-- 其他資料 -->
+        <div class="form-section">
+            <h3>其他資料（選填）</h3>
+            <div class="form-grid">
+                <div class="form-field">
+                    <label for="gender">性別</label>
+                    <select id="gender">
+                        <option value="">不指定</option>
+                        <option value="M">男</option>
+                        <option value="F">女</option>
+                    </select>
+                </div>
+                <div class="form-field">
+                    <label for="schoolType">學校類型</label>
+                    <select id="schoolType">
+                        <option value="all">不指定</option>
+                        <option value="day">日校</option>
+                        <option value="evening">夜校</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- 即時計算顯示 -->
+        <div class="score-display">
+            <div class="score" id="currentScore">0</div>
+            <div class="label">最佳5科積點</div>
+            <div class="status-row">
+                <span>332A要求：</span>
+                <span id="status332A" class="status-badge status-fail">未達標</span>
+            </div>
+        </div>
+
+        <button class="btn-analyze" onclick="analyzeGrades()">立即分析成績</button>
+
+        <!-- Loading狀態 -->
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p style="margin-top: 20px; color: #666;">正在分析你的成績...</p>
+        </div>
+
+        <!-- 分析結果 -->
+        <div class="results-section" id="results">
+            <div class="result-card">
+                <div class="percentile-display">
+                    <div class="percentile-number" id="percentileValue">-</div>
+                    <div class="percentile-label">百分位</div>
+                    <div class="percentile-rank" id="rankingText">-</div>
+                </div>
+            </div>
+
+            <div class="result-card">
+                <h3 style="margin-bottom: 24px;">詳細分析</h3>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-value" id="best5Score">-</div>
+                        <div class="stat-label">最佳5科積點</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="meets332A">-</div>
+                        <div class="stat-label">332A要求</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="overallRank">-</div>
+                        <div class="stat-label">全港排名</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="universityChance">-</div>
+                        <div class="stat-label">入學機會</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="result-card">
+                <h3 style="margin-bottom: 20px;">💡 個人化建議</h3>
+                <ul class="suggestions-list" id="suggestionsList"></ul>
+            </div>
+
+            <div class="action-buttons">
+                <button onclick="resetForm()">重新輸入</button>
+                <button onclick="shareResults()">分享結果</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ================================
+        // 科目列表（傳統中文）
+        // ================================
+        const subjects = {
+            'PHY': '物理',
+            'CHEM': '化學',
+            'BIO': '生物',
+            'ECON': '經濟',
+            'BAFS': '企業、會計與財務概論',
+            'GEOG': '地理',
+            'HIST': '歷史',
+            'CHIST': '中國歷史',
+            'ICT': '資訊及通訊科技',
+            'VA': '視覺藝術',
+            'M1': '數學延伸部分(M1)',
+            'M2': '數學延伸部分(M2)',
+            'PE': '體育',
+            'MUSIC': '音樂',
+            'ETHICS': '倫理與宗教'
+        };
+        
+        // ================================
+        // 成績計算函數
+        // ================================
+        function gradeToScore(grade) {
+            const gradeMap = {
+                '5**': 7, '5*': 6, '5': 5, '4': 4,
+                '3': 3, '2': 2, '1': 1, 'U': 0,
+                'A': 2, 'NA': 0
+            };
+            return gradeMap[grade] || 0;
+        }
+
+        function calculateBest5() {
+            const chinese = document.getElementById('chinese').value;
+            const english = document.getElementById('english').value;
+            const math = document.getElementById('math').value;
+            
+            const scores = [
+                gradeToScore(chinese),
+                gradeToScore(english),
+                gradeToScore(math)
+            ];
+            
+            // Add elective scores
+            const electiveRows = document.querySelectorAll('.elective-row');
+            electiveRows.forEach(row => {
+                const grade = row.querySelector('.elective-grade').value;
+                if (grade) {
+                    scores.push(gradeToScore(grade));
+                }
+            });
+            
+            // Sort and take top 5
+            scores.sort((a, b) => b - a);
+            return scores.slice(0, 5).reduce((sum, s) => sum + s, 0);
+        }
+
+        function check332A() {
+            const chinese = gradeToScore(document.getElementById('chinese').value);
+            const english = gradeToScore(document.getElementById('english').value);
+            const math = gradeToScore(document.getElementById('math').value);
+            const liberal = document.getElementById('liberal').value;
+            
+            return chinese >= 3 && english >= 3 && math >= 2 && liberal === 'A';
+        }
+
+        function updateScore() {
+            const score = calculateBest5();
+            const meets = check332A();
+            
+            document.getElementById('currentScore').textContent = score;
+            const statusBadge = document.getElementById('status332A');
+            statusBadge.textContent = meets ? '✅ 達標' : '❌ 未達標';
+            statusBadge.className = 'status-badge ' + (meets ? 'status-pass' : 'status-fail');
+        }
+
+        // ================================
+        // 選修科目管理
+        // ================================
+        let electiveCount = 0;
+        
+        function getSelectedElectives() {
+            const selected = [];
+            const electiveRows = document.querySelectorAll('.elective-row');
+            electiveRows.forEach(row => {
+                const subject = row.querySelector('.elective-subject').value;
+                if (subject) {
+                    selected.push(subject);
+                }
+            });
+            return selected;
+        }
+        
+        function createElectiveOptions(currentValue = '') {
+            const selected = getSelectedElectives();
+            let options = '<option value="">選擇科目</option>';
+            
+            for (const [code, name] of Object.entries(subjects)) {
+                // Allow current value or non-selected subjects
+                if (code === currentValue || !selected.includes(code)) {
+                    options += `<option value="${code}" ${code === currentValue ? 'selected' : ''}>${name}</option>`;
+                }
+            }
+            
+            return options;
+        }
+        
+        function addElective() {
+            const container = document.getElementById('electives-container');
+            const currentCount = container.querySelectorAll('.elective-row').length;
+            
+            if (currentCount >= 4) {
+                alert('最多只能添加4個選修科目');
+                return;
+            }
+            
+            const row = document.createElement('div');
+            row.className = 'elective-row';
+            row.id = `elective-${++electiveCount}`;
+            
+            row.innerHTML = `
+                <select class="elective-subject" onchange="handleElectiveChange(this); updateScore();">
+                    ${createElectiveOptions()}
+                </select>
+                <select class="elective-grade" onchange="updateScore()">
+                    <option value="">等級</option>
+                    <option value="5**">5**</option>
+                    <option value="5*">5*</option>
+                    <option value="5">5</option>
+                    <option value="4">4</option>
+                    <option value="3">3</option>
+                    <option value="2">2</option>
+                    <option value="1">1</option>
+                    <option value="U">U</option>
+                </select>
+                <button class="btn-remove" onclick="removeElective(this)">移除</button>
+            `;
+            
+            container.appendChild(row);
+        }
+        
+        function handleElectiveChange(selectElement) {
+            // Update all elective dropdowns to reflect available options
+            const allElectiveSelects = document.querySelectorAll('.elective-subject');
+            allElectiveSelects.forEach(select => {
+                const currentValue = select.value;
+                select.innerHTML = createElectiveOptions(currentValue);
+            });
+        }
+        
+        function removeElective(button) {
+            const row = button.parentElement;
+            row.remove();
+            // Update all dropdowns after removal
+            handleElectiveChange(null);
+            updateScore();
+        }
+        
+        // Initialize with one elective
+        function initializeElectives() {
+            addElective();
+        }
+        
+        // ================================
+        // API 分析函數
+        // ================================
+        async function analyzeGrades() {
+            const chinese = document.getElementById('chinese').value;
+            const english = document.getElementById('english').value;
+            const math = document.getElementById('math').value;
+            const liberal = document.getElementById('liberal').value;
+            
+            if (!chinese || !english || !math || !liberal) {
+                alert('請填寫所有核心科目');
+                return;
+            }
+            
+            // Collect electives
+            const electives = [];
+            const electiveRows = document.querySelectorAll('.elective-row');
+            electiveRows.forEach(row => {
+                const subject = row.querySelector('.elective-subject').value;
+                const grade = row.querySelector('.elective-grade').value;
+                if (subject && grade) {
+                    electives.push({ code: subject, grade });
+                }
+            });
+            
+            const data = {
+                chinese,
+                english,
+                math,
+                liberal,
+                electives,
+                gender: document.getElementById('gender').value || undefined,
+                schoolType: document.getElementById('schoolType').value || undefined
+            };
+            
+            document.getElementById('loading').classList.add('show');
+            document.getElementById('results').classList.remove('show');
+            
+            try {
+                const response = await fetch('/api/hkdse-analyzer/analyze', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    displayResults(result);
+                } else {
+                    alert('分析失敗：' + (result.error || '請稍後再試'));
+                }
+            } catch (error) {
+                console.error('Analysis error:', error);
+                alert('網絡錯誤，請稍後再試');
+            } finally {
+                document.getElementById('loading').classList.remove('show');
+            }
+        }
+
+        function displayResults(data) {
+            const percentileNum = parseFloat(data.percentile);
+            const percentileElement = document.getElementById('percentileValue');
+            percentileElement.textContent = data.percentile + '%';
+            
+            // Apply color class based on percentile
+            percentileElement.className = '';
+            if (percentileNum >= 70) {
+                percentileElement.className = 'percentile-number percentile-high';
+            } else if (percentileNum >= 40) {
+                percentileElement.className = 'percentile-number percentile-medium';
+            } else {
+                percentileElement.className = 'percentile-number percentile-low';
+            }
+            
+            document.getElementById('rankingText').textContent = `排名：${data.ranking.overall}`;
+            
+            document.getElementById('best5Score').textContent = data.best5Score + '分';
+            document.getElementById('meets332A').innerHTML = data.meets332A ? 
+                '<span style="color: #10b981; font-weight: bold;">✅ 達標</span>' : 
+                '<span style="color: #ef4444; font-weight: bold;">❌ 未達標</span>';
+            document.getElementById('overallRank').textContent = data.ranking.overall.split('/')[0];
+            
+            // University chance with color
+            let chance = '低';
+            let chanceClass = 'chance-low';
+            if (percentileNum > 70) {
+                chance = '高';
+                chanceClass = 'chance-high';
+            } else if (percentileNum > 40) {
+                chance = '中';
+                chanceClass = 'chance-medium';
+            }
+            
+            const chanceElement = document.getElementById('universityChance');
+            chanceElement.textContent = chance;
+            chanceElement.className = 'stat-value ' + chanceClass;
+            
+            const suggestionsList = document.getElementById('suggestionsList');
+            suggestionsList.innerHTML = '';
+            data.suggestions.forEach(suggestion => {
+                const li = document.createElement('li');
+                li.textContent = suggestion;
+                suggestionsList.appendChild(li);
+            });
+            
+            document.getElementById('results').classList.add('show');
+            document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
+            
+            localStorage.setItem('hkdse_analysis', JSON.stringify(data));
+        }
+
+        function resetForm() {
+            if (confirm('確定要清除所有輸入嗎？')) {
+                document.getElementById('chinese').value = '3';
+                document.getElementById('english').value = '3';
+                document.getElementById('math').value = '2';
+                document.getElementById('liberal').value = 'A';
+                document.getElementById('gender').value = '';
+                document.getElementById('schoolType').value = 'all';
+                
+                // Clear and reinitialize electives
+                document.getElementById('electives-container').innerHTML = '';
+                electiveCount = 0;
+                initializeElectives();
+                
+                document.getElementById('results').classList.remove('show');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                updateScore();
+            }
+        }
+
+        function shareResults() {
+            const data = localStorage.getItem('hkdse_analysis');
+            if (!data) return;
+            
+            const result = JSON.parse(data);
+            const text = `我的HKDSE成績分析結果：
+📊 百分位：${result.percentile}%
+📚 最佳5科：${result.best5Score}分
+🎯 332A：${result.meets332A ? '達標' : '未達標'}
+🏫 排名：${result.ranking.overall}
+
+使用 HKDSE Analyzer 分析你的成績：${window.location.origin}/apps/hkdse-analyzer/`;
+            
+            if (navigator.share) {
+                navigator.share({
+                    title: 'HKDSE成績分析結果',
+                    text: text
+                });
+            } else {
+                navigator.clipboard.writeText(text).then(() => {
+                    alert('結果已複製到剪貼板！');
+                });
+            }
+        }
+        
+        // ================================
+        // 初始化
+        // ================================
+        document.addEventListener('DOMContentLoaded', () => {
+            // Initialize electives
+            initializeElectives();
+            
+            // Add event listeners
+            const selects = document.querySelectorAll('#chinese, #english, #math, #liberal, #gender, #schoolType');
+            selects.forEach(select => {
+                select.addEventListener('change', updateScore);
+            });
+            
+            // Initial calculation
+            updateScore();
+        });
+    </script>
+</body>
+</html>

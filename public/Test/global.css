@@ -1,0 +1,188 @@
+/* ================================ */
+/* 極簡設計系統 - 黑白配色 */
+/* ================================ */
+:root {
+  /* 極簡色彩系統 */
+  --color-black: #000000;
+  --color-white: #ffffff;
+  --color-gray-light: #f5f5f5;
+  --color-gray-border: #e5e5e5;
+  --color-success: #059669;
+  --color-danger: #dc2626;
+  
+  /* 間距系統 */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  
+  /* 字型系統 */
+  --font-body: system-ui, -apple-system, sans-serif;
+}
+
+/* ================================ */
+/* 基礎重置 */
+/* ================================ */
+*, *::before, *::after { 
+  box-sizing: border-box; 
+}
+
+body { 
+  margin: 0;
+  padding: 0;
+  font-family: var(--font-body);
+  background: var(--color-white);
+  color: var(--color-black);
+  line-height: 1.6;
+}
+
+/* ================================ */
+/* 佈局系統 */
+/* ================================ */
+.container { 
+  max-width: 1200px; 
+  margin: 0 auto; 
+  padding: var(--space-md); 
+}
+
+.grid { 
+  display: grid; 
+  gap: var(--space-lg); 
+}
+
+.grid-2 { grid-template-columns: repeat(2, 1fr); }
+.grid-3 { grid-template-columns: repeat(3, 1fr); }
+
+/* 響應式 */
+@media (max-width: 768px) {
+  .grid-2, .grid-3 { 
+    grid-template-columns: 1fr; 
+  }
+}
+
+/* ================================ */
+/* 按鈕系統 - 統一44px高度 */
+/* ================================ */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  min-width: 70px;
+  padding: var(--space-sm) var(--space-md);
+  border: 2px solid var(--color-black);
+  background: var(--color-white);
+  color: var(--color-black);
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+  border-radius: 0;
+  white-space: nowrap;
+  line-height: 1;
+  box-sizing: border-box;
+}
+
+.btn:hover {
+  background: var(--color-black);
+  color: var(--color-white);
+  transform: translateY(-2px);
+}
+
+.btn:active {
+  transform: translateY(0);
+}
+
+/* 返回按鈕 - 統一樣式和位置 */
+.back-btn {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 100;
+  min-height: 40px;
+  min-width: 80px;
+  padding: 8px 12px;
+  font-size: 14px;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+/* 響應式返回按鈕 - 防止與標題重疊 */
+@media (max-width: 768px) {
+  /* 為容器添加頂部間距以容納返回按鈕 */
+  body:has(.back-btn) .container,
+  body:has(.back-btn) .app-container {
+    padding-top: var(--space-xl);
+  }
+}
+
+/* ================================ */
+/* 卡片系統 */
+/* ================================ */
+.card {
+  background: var(--color-white);
+  border: 2px solid var(--color-black);
+  padding: var(--space-xl);
+  transition: transform 0.15s;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+}
+
+.card h3 {
+  margin: 0 0 var(--space-sm);
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.card p {
+  margin: 0 0 var(--space-md);
+  color: #666;
+}
+
+/* ================================ */
+/* 應用頁面樣式 - 統一容器 */
+/* ================================ */
+.app-container {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: var(--space-md);
+}
+
+/* 特殊容器寬度 */
+.app-container.narrow {
+  max-width: 400px;
+}
+
+.app-container.wide {
+  max-width: 500px;
+}
+
+/* 應用頁面統一樣式 */
+.app-page {
+  text-align: center;
+}
+
+.app-page h1 {
+  text-align: center;
+  margin-bottom: var(--space-lg);
+}
+
+/* 應用內按鈕統一間距 */
+.app-container .btn {
+  margin: 0 6px;
+}
+
+/* ================================ */
+/* 工具類別 */
+/* ================================ */
+.text-center { text-align: center; }
+.mt-sm { margin-top: var(--space-sm); }
+.mb-md { margin-bottom: var(--space-md); }
+.hidden { display: none; }
