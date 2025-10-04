@@ -16,7 +16,7 @@ body {
 }
 
 /* 主容器 */
-.container {
+#container {
     width: 95%;
     max-width: 95%;
     height: 95%;
