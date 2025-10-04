@@ -115,7 +115,7 @@ header p {
 /* 任務列表 */
 #taskList {
     list-style-type: none;
-    height: 70%;
+
     overflow-y: auto;
 }
 
