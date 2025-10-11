@@ -223,8 +223,11 @@ function updateTasksCount() {
 // 儲存任務到localStorage
 async function saveTasks() {
     await fetch("https://todo-api.llf201196.workers.dev/?key=tasks", {
-        Method: "POST",
+        method: "POST",
         body: JSON.stringify(tasks),
+        headers: {
+            "Content-Type": "application/json"
+        }
     });
 }
 
