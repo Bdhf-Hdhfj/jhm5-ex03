@@ -230,7 +230,9 @@ async function saveTasks() {
 
 // 從localStorage載入任務
 async function loadTasks() {
-    const res = await fetch("https://todo-api.llf201196.workers.dev/?key=tasks");
+    const res = await fetch("https://todo-api.llf201196.workers.dev/?key=tasks", {
+        Method: "GET",
+    });
     const storedTasks = await res.json();
     tasks = storedTasks;
 }
