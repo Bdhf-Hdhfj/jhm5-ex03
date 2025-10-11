@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>待辦事項清單</title>
+  <style>
+    body { font-family: sans-serif; max-width: 600px; margin: auto; padding: 2rem; }
+    .task-item { display: flex; justify-content: space-between; align-items: center; margin: 0.5rem 0; }
+    .completed .task-content { text-decoration: line-through; color: gray; }
+    .task-actions button { margin-left: 0.5rem; }
+    .filter-btn.active { font-weight: bold; }
+    .empty-message { color: #888; font-style: italic; }
+    #editModal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; }
+    #editModalContent { background: white; padding: 1rem; border-radius: 5px; }
+  </style>
+</head>
+<body>
+  <h1>待辦事項清單</h1>
+  <input id="taskInput" placeholder="輸入新的待辦事項" />
+  <button id="addTaskBtn">新增</button>
+  <ul id="taskList"></ul>
+  <p id="tasksCount"></p>
+  <button id="clearCompleted">清除已完成</button>
+  <div>
+    <button class="filter-btn active" data-filter="all">全部</button>
+    <button class="filter-btn" data-filter="active">未完成</button>
+    <button class="filter-btn" data-filter="completed">已完成</button>
+  </div>
+
+  <div id="editModal">
+    <div id="editModalContent">
+      <input id="editTaskInput" />
+      <button id="saveEditBtn">儲存</button>
+      <button class="close">取消</button>
+    </div>
+  </div>
+
+  <script>
+    let tasks = [];
+    let currentFilter = 'all';
+    let editingTaskId = null;
+    const API_URL = "https://todo-api.llf201196.workers.dev/?key=tasks";
+
+    const taskInput = document.getElementById('taskInput');
+    const addTaskBtn = document.getElementById('addTaskBtn');
+    const taskList = document.getElementById('taskList');
+    const tasksCount = document.getElementById('tasksCount');
+    const clearCompletedBtn = document.getElementById('clearCompleted');
+    const filterBtns = document.querySelectorAll('.filter-btn');
+    const editModal = document.getElementById('editModal');
+    const editTaskInput = document.getElementById('editTaskInput');
+    const saveEditBtn = document.getElementById('saveEditBtn');
+    const closeModal = document.querySelector('.close');
+
+    document.addEventListener('DOMContentLoaded', () => {
+      loadTasks();
+      setupEventListeners();
+    });
+
+    function setupEventListeners() {
+      addTaskBtn.addEventListener('click', addTask);
+      taskInput.addEventListener('keypress', e => { if (e.key === 'Enter') addTask(); });
+      clearCompletedBtn.addEventListener('click', clearCompletedTasks);
+      filterBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+          filterBtns.forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          currentFilter = btn.dataset.filter;
+          renderTasks();
+        });
+      });
+      closeModal.addEventListener('click', () => editModal.style.display = 'none');
+      window.addEventListener('click', e => { if (e.target === editModal) editModal.style.display = 'none'; });
+      saveEditBtn.addEventListener('click', saveEditedTask);
+    }
+
+    async function loadTasks() {
+      try {
+        const res = await fetch(API_URL);
+        tasks = await res.json();
+        renderTasks();
+      } catch (err) {
+        console.error("載入任務失敗", err);
+      }
+    }
+
+    async function saveTasks() {
+      try {
+        await fetch(API_URL, {
+          method: "POST",
+          body: JSON.stringify(tasks),
+        });
+      } catch (err) {
+        console.error("儲存任務失敗", err);
+      }
+    }
+
+    function addTask() {
+      const taskText = taskInput.value.trim();
+      if (!taskText) return alert("請輸入待辦事項內容！");
+      const newTask = {
+        id: Date.now(),
+        text: taskText,
+        completed: false,
+        createdAt: new Date().toISOString()
+      };
+      tasks.push(newTask);
+      saveTasks();
+      renderTasks();
+      taskInput.value = '';
+      taskInput.focus();
+    }
+
+    function renderTasks() {
+      let filtered = tasks;
+      if (currentFilter === 'active') filtered = tasks.filter(t => !t.completed);
+      if (currentFilter === 'completed') filtered = tasks.filter(t => t.completed);
+      taskList.innerHTML = '';
+      if (filtered.length === 0) {
+        const msg = document.createElement('li');
+        msg.className = 'empty-message';
+        msg.textContent = currentFilter === 'all' ? '目前沒有待辦事項' :
+                          currentFilter === 'active' ? '沒有待完成的任務' :
+                          '沒有已完成的任務';
+        taskList.appendChild(msg);
+      } else {
+        filtered.forEach(task => taskList.appendChild(createTaskElement(task)));
+      }
+      updateTasksCount();
+    }
+
+    function createTaskElement(task) {
+      const li = document.createElement('li');
+      li.className = 'task-item';
+      if (task.completed) li.classList.add('completed');
+      li.innerHTML = `
+        <input type="checkbox" class="task-checkbox" ${task.completed ? 'checked' : ''}>
+        <span class="task-content">${task.text}</span>
+        <div class="task-actions">
+          <button class="edit-btn">編輯</button>
+          <button class="delete-btn">刪除</button>
+        </div>
+      `;
+      li.querySelector('.task-checkbox').addEventListener('change', () => toggleTaskCompleted(task.id));
+      li.querySelector('.edit-btn').addEventListener('click', () => openEditModal(task));
+      li.querySelector('.delete-btn').addEventListener('click', () => deleteTask(task.id));
+      return li;
+    }
+
+    function toggleTaskCompleted(id) {
+      tasks = tasks.map(t => t.id === id ? { ...t, completed: !t.completed } : t);
+      saveTasks();
+      renderTasks();
+    }
+
+    function openEditModal(task) {
+      editingTaskId = task.id;
+      editTaskInput.value = task.text;
+      editModal.style.display = 'flex';
+      editTaskInput.focus();
+    }
+
+    function saveEditedTask() {
+      const newText = editTaskInput.value.trim();
+      if (!newText) return alert("待辦事項內容不能為空！");
+      tasks = tasks.map(t => t.id === editingTaskId ? { ...t, text: newText } : t);
+      saveTasks();
+      renderTasks();
+      editModal.style.display = 'none';
+      editingTaskId = null;
+    }
+
+    function deleteTask(id) {
+      if (confirm("確定要刪除這個待辦事項嗎？")) {
+        tasks = tasks.filter(t => t.id !== id);
+        saveTasks();
+        renderTasks();
+      }
+    }
+
+    function clearCompletedTasks() {
+      if (confirm("確定要清除所有已完成的待辦事項嗎？")) {
+        tasks = tasks.filter(t => !t.completed);
+        saveTasks();
+        renderTasks();
+      }
+    }
+
+    function updateTasksCount() {
+      const count = tasks.filter(t => !t.completed).length;
+      tasksCount.textContent = `${count} 個待辦事項`;
+    }
+  </script>
+</body>
+</html>
