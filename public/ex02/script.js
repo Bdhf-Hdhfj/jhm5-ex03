@@ -237,4 +237,5 @@ async function loadTasks() {
     );
     const storedTasks = await res.json();
     tasks = storedTasks;
+    renderTasks();
 }
