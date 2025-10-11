@@ -237,7 +237,5 @@ async function loadTasks() {
     const storedTasks = await res.json();
     tasks = storedTasks;
     renderTasks();
-    if (storedTasks) {
-        tasks = JSON.parse(storedTasks);
-    }
+    
 }
