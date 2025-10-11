@@ -232,7 +232,7 @@ async function saveTasks() {
 async function loadTasks() {
     const res = await fetch("https://todo-api.llf201196.workers.dev/?key=tasks"
     );
-    const tasks = await res.json();
-    renderTasks();
+    const storedTasks = await res.json();
+    tasks = storedTasks;
     
 }
