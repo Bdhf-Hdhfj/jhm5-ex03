@@ -6,7 +6,6 @@
 		"deploy": "wrangler deploy",
 		"dev": "wrangler dev",
 		"start": "wrangler dev",
-		"import:csv": "node scripts/import-csv.js",
 		"test": "vitest",
 		"cf-typegen": "wrangler types"
 	},
@@ -14,8 +13,6 @@
 		"@cloudflare/vitest-pool-workers": "^0.8.19",
 		"typescript": "^5.5.2",
 		"vitest": "~3.2.0",
-		"wrangler": "^4.38.0",
-		"sqlite3": "^5.1.6",
-		"csv-parse": "^5.4.1"
+		"wrangler": "^4.38.0"
 	}
 }
