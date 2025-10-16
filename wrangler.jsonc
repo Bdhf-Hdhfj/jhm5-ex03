@@ -35,6 +35,10 @@
 	 * https://developers.cloudflare.com/workers/static-assets/binding/
 	 */
 	"assets": { "directory": "./public/", "binding": "ASSETS" }
+	,
+	"d1_databases": [
+		{ "binding": "HKDSE_DB", "database_name": "hkdsedata" }
+	]
 	/**
 	 * Service Bindings (communicate between multiple Workers)
 	 * https://developers.cloudflare.com/workers/wrangler/configuration/#service-bindings

@@ -7,9 +7,19 @@ declare namespace Cloudflare {
 	}
 	interface Env {
         ASSETS: Fetcher;
-	}
+        HKDSE_DB?: D1Database;
+    }
 }
 interface Env extends Cloudflare.Env {}
+
+// Minimal D1 types (lightweight) to help TypeScript in this workspace
+interface D1Prepared {
+    all(...args: any[]): Promise<{ results: any[] }>;
+}
+
+interface D1Database {
+    prepare(sql: string): D1Prepared;
+}
 
 // Begin runtime types
 /*! *****************************************************************************
