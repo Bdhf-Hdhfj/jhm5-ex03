@@ -1,15 +1,7 @@
-// 模擬從Cloudflare D1獲取的數據
-// 在實際應用中，這裡應該替換為從Cloudflare D1數據庫獲取的真實數據
-const hkdseData = [
-    { range: "35/34/33", dayCount: 283, dayPercentage: "0.7%", allCount: 296, allPercentage: "0.6%" },
-    { range: "32/31/30", dayCount: 643, dayPercentage: "1.6%", allCount: 671, allPercentage: "1.4%" },
-    { range: "29/28/27", dayCount: 1253, dayPercentage: "3.1%", allCount: 1306, allPercentage: "2.7%" },
-    { range: "26/25/24", dayCount: 2138, dayPercentage: "5.3%", allCount: 2256, allPercentage: "4.6%" },
-    { range: "23/22/21", dayCount: 3648, dayPercentage: "9.0%", allCount: 3801, allPercentage: "7.8%" },
-    { range: "20/19/18", dayCount: 4887, dayPercentage: "12.0%", allCount: 5109, allPercentage: "10.4%" },
-    { range: "17/16/15", dayCount: 4011, dayPercentage: "9.9%", allCount: 4187, allPercentage: "8.5%" },
-    { range: "14/13/12", dayCount: 1164, dayPercentage: "2.9%", allCount: 1224, allPercentage: "2.5%" }
-];
+// Data will be fetched from the Worker API (/api/stats)
+let hkdseData = [];
+let isLoading = false;
+let lastError = null;
 
 // 初始化圖表
 let scoreChart;
@@ -26,14 +18,48 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('query-btn').addEventListener('click', handleQuery);
     
     // 初始查詢
-    handleQuery();
+    // fetch data then run initial query
+    fetchAndInit();
 });
+
+async function fetchAndInit() {
+    isLoading = true;
+    try {
+        const res = await fetch('/api/stats');
+        if (!res.ok) throw new Error('Failed to fetch data');
+        const body = await res.json();
+        hkdseData = body.data || [];
+        lastError = null;
+    } catch (err) {
+        console.error('Error fetching HKDSE data', err);
+        lastError = err;
+        hkdseData = [];
+    } finally {
+        isLoading = false;
+        populateTable();
+        initializeChart();
+        handleQuery();
+    }
+}
 
 // 填充表格數據
 function populateTable() {
     const tableBody = document.getElementById('table-body');
     tableBody.innerHTML = '';
-    
+    if (lastError) {
+        const row = document.createElement('tr');
+        row.innerHTML = `<td colspan="5">Error loading data: ${lastError.message}</td>`;
+        tableBody.appendChild(row);
+        return;
+    }
+
+    if (isLoading) {
+        const row = document.createElement('tr');
+        row.innerHTML = `<td colspan="5">Loading data...</td>`;
+        tableBody.appendChild(row);
+        return;
+    }
+
     hkdseData.forEach(item => {
         const row = document.createElement('tr');
         row.innerHTML = `
