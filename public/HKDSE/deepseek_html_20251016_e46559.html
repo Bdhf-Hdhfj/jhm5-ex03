@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HKDSE 成績分析器</title>
+    <link rel="stylesheet" href="styles.css">
+    <!-- 引入Chart.js用於圖表 -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>HKDSE 成績分析器</h1>
+            <p class="subtitle">2024年香港中學文憑考試成績統計分析</p>
+        </header>
+
+        <main>
+            <!-- 查詢控制面板 -->
+            <section class="control-panel">
+                <div class="card">
+                    <h2>查詢設定</h2>
+                    <div class="form-group">
+                        <label for="score-range">選擇積分範圍:</label>
+                        <select id="score-range">
+                            <option value="all">全部範圍</option>
+                            <option value="35/34/33">35/34/33分</option>
+                            <option value="32/31/30">32/31/30分</option>
+                            <option value="29/28/27">29/28/27分</option>
+                            <option value="26/25/24">26/25/24分</option>
+                            <option value="23/22/21">23/22/21分</option>
+                            <option value="20/19/18">20/19/18分</option>
+                            <option value="17/16/15">17/16/15分</option>
+                            <option value="14/13/12">14/13/12分</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="category">選擇考生類別:</label>
+                        <select id="category">
+                            <option value="both">日校及全體考生</option>
+                            <option value="day">日校考生</option>
+                            <option value="all">全體考生</option>
+                        </select>
+                    </div>
+                    <button id="query-btn" class="btn-primary">查詢數據</button>
+                </div>
+            </section>
+
+            <!-- 統計數據展示 -->
+            <section class="stats-display">
+                <div class="card">
+                    <h2>統計數據</h2>
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <h3>日校考生總人數</h3>
+                            <p id="day-total">40,666</p>
+                        </div>
+                        <div class="stat-item">
+                            <h3>全體考生總人數</h3>
+                            <p id="all-total">49,026</p>
+                        </div>
+                        <div class="stat-item">
+                            <h3>查詢範圍人數</h3>
+                            <p id="query-count">--</p>
+                        </div>
+                        <div class="stat-item">
+                            <h3>查詢範圍百分比</h3>
+                            <p id="query-percentage">--</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 圖表展示區域 -->
+            <section class="chart-section">
+                <div class="card">
+                    <h2>成績分布圖表</h2>
+                    <div class="chart-container">
+                        <canvas id="score-chart"></canvas>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 詳細數據表格 -->
+            <section class="data-table">
+                <div class="card">
+                    <h2>詳細數據</h2>
+                    <div class="table-container">
+                        <table id="score-table">
+                            <thead>
+                                <tr>
+                                    <th>積分範圍</th>
+                                    <th>日校考生人數</th>
+                                    <th>日校考生百分比</th>
+                                    <th>全體考生人數</th>
+                                    <th>全體考生百分比</th>
+                                </tr>
+                            </thead>
+                            <tbody id="table-body">
+                                <!-- 表格數據將通過JavaScript動態生成 -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            <p>© 2024 HKDSE 成績分析器 | 數據來源: 香港考試及評核局</p>
+        </footer>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
