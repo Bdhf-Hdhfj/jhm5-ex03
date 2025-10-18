@@ -40,6 +40,69 @@ export default {
 					headers: { 'Content-Type': 'application/json' },
 				});
 			}
+
+			// Simple Todos API using KV binding TODOS (optional)
+			if (url.pathname.startsWith('/api/todos')) {
+				// /api/todos            GET -> list
+				// /api/todos            POST -> create {text}
+				// /api/todos/:id        PATCH -> toggle
+				// /api/todos/:id        DELETE -> remove
+				if (!(env as any).TODOS) {
+					return new Response(JSON.stringify({ error: 'KV TODOS not bound' }), { status: 501, headers: { 'Content-Type': 'application/json' } });
+				}
+
+				const parts = url.pathname.split('/').filter(Boolean);
+				const id = parts[2];
+				if (request.method === 'GET' && parts.length === 2) {
+					// list all keys (note: list is paginated in real KV; this is a light demo)
+					const list = await (env as any).TODOS.list({ prefix: '' });
+					const items = await Promise.all(list.keys.map(async (k: any) => {
+						const body = await (env as any).TODOS.get(k.name);
+						try { return JSON.parse(body || 'null'); } catch { return null }
+					}));
+					return new Response(JSON.stringify(items.filter(Boolean)), { headers: { 'Content-Type': 'application/json' } });
+				}
+
+				if (request.method === 'POST' && parts.length === 2) {
+					const payload = await request.json().catch(() => ({} as any)) as any;
+					const newId = Date.now().toString(36) + Math.random().toString(36).slice(2,8);
+					const item = { id: newId, text: String(payload.text || ''), done: false };
+					await (env as any).TODOS.put(newId, JSON.stringify(item));
+					return new Response(JSON.stringify(item), { status: 201, headers: { 'Content-Type': 'application/json' } });
+				}
+
+				if (id && request.method === 'DELETE') {
+					await (env as any).TODOS.delete(id);
+					return new Response(null, { status: 204 });
+				}
+
+				if (id && request.method === 'PATCH') {
+					const raw = await (env as any).TODOS.get(id);
+					if (!raw) return new Response(JSON.stringify({ error: 'not found' }), { status: 404, headers: { 'Content-Type': 'application/json' } });
+					const obj = JSON.parse(raw);
+					obj.done = !obj.done;
+					await (env as any).TODOS.put(id, JSON.stringify(obj));
+					return new Response(JSON.stringify(obj), { headers: { 'Content-Type': 'application/json' } });
+				}
+			}
+
+			// Example score endpoint using KV SCORES if bound
+			if (url.pathname.startsWith('/api/score')) {
+				if (!(env as any).SCORES) {
+					return new Response(JSON.stringify({ error: 'KV SCORES not bound' }), { status: 501, headers: { 'Content-Type': 'application/json' } });
+				}
+				if (request.method === 'POST') {
+					const p = await request.json().catch(()=>({} as any)) as any;
+					const id = p.user||'anon';
+					await (env as any).SCORES.put(id, JSON.stringify({ score: p.score||0, at: Date.now() }));
+					return new Response(null, { status: 204 });
+				}
+				if (request.method === 'GET') {
+					const keys = await (env as any).SCORES.list();
+					const rows = await Promise.all(keys.keys.map(async (k: any) => ({ key: k.name, val: JSON.parse(await (env as any).SCORES.get(k.name) || 'null') })));
+					return new Response(JSON.stringify(rows), { headers: { 'Content-Type': 'application/json' } });
+				}
+			}
 		}
 
 		// Try to serve static assets by default

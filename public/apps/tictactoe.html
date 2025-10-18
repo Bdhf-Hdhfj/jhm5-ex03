@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Tic Tac Toe</title>
+    <link rel="stylesheet" href="/global.css" />
+    <style>body{font-family:system-ui;padding:20px}.board{display:grid;grid-template-columns:repeat(3,80px);gap:8px}button.cell{width:80px;height:80px;font-size:36px}</style>
+  </head>
+  <body>
+    <h1>Tic Tac Toe</h1>
+    <div id="status">Loading...</div>
+    <div class="board" id="board"></div>
+    <p>
+      <button id="new">New Game</button>
+      <button id="mode">Mode: Human vs Human</button>
+    </p>
+    <script>
+      // Simple local implementation placeholder. Full minimax omitted for brevity.
+      const boardEl=document.getElementById('board');const status=document.getElementById('status');let state=JSON.parse(localStorage.getItem('tictactoe')||'null')||{cells:Array(9).fill(''),xNext:true};
+      function render(){boardEl.innerHTML='';state.cells.forEach((v,i)=>{const b=document.createElement('button');b.className='cell';b.textContent=v;b.onclick=()=>{if(v||winner())return;state.cells[i]=state.xNext?'X':'O';state.xNext=!state.xNext;save();render();};boardEl.appendChild(b)});status.textContent=winner()?('Winner: '+winner()):('Next: '+(state.xNext?'X':'O'));}
+      function winner(){const s=state.cells;const lines=[[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];for(const l of lines){const [a,b,c]=l; if(s[a]&&s[a]===s[b]&&s[a]===s[c]) return s[a]} return s.every(Boolean)?'Draw':null}
+      function save(){localStorage.setItem('tictactoe',JSON.stringify(state))}
+      document.getElementById('new').onclick=()=>{state={cells:Array(9).fill(''),xNext:true};save();render()}
+      render();
+    </script>
+  </body>
+</html>

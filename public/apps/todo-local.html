@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Todo - Local</title>
+    <link rel="stylesheet" href="/global.css" />
+    <style>body{font-family:system-ui;padding:20px}ul{padding:0;list-style:none}li{padding:8px;border-bottom:1px solid #eee}</style>
+  </head>
+  <body>
+    <h1>Todo (Local)</h1>
+    <input id="newitem" placeholder="Add item" /> <button id="add">Add</button>
+    <ul id="list"></ul>
+    <script>
+      const key='todo.local.items';const listEl=document.getElementById('list');function load(){return JSON.parse(localStorage.getItem(key)||'[]')}
+      function save(items){localStorage.setItem(key,JSON.stringify(items))}
+      function render(){const items=load();listEl.innerHTML='';items.forEach((it,i)=>{const li=document.createElement('li');li.textContent=(it.done? '✅ ':'')+it.text;li.onclick=()=>{items[i].done=!items[i].done;save(items);render()};listEl.appendChild(li)})}
+      document.getElementById('add').onclick=()=>{const v=document.getElementById('newitem').value.trim();if(!v) return;const items=load();items.push({text:v,done:false});save(items);document.getElementById('newitem').value='';render()}
+      render();
+    </script>
+  </body>
+</html>

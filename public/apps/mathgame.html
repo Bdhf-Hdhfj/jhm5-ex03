@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Math Game</title>
+    <link rel="stylesheet" href="/global.css" />
+    <style>body{font-family:system-ui;padding:20px}#problem{font-size:24px;margin:12px 0}</style>
+  </head>
+  <body>
+    <h1>Math Game</h1>
+    <label>Difficulty: <select id="diff"><option value="easy">Easy</option><option value="medium">Medium</option><option value="hard">Hard</option></select></label>
+    <div id="timer">Time: <span id="time">30</span>s</div>
+    <div id="problem">—</div>
+    <input id="answer" /><button id="submit">Submit</button>
+    <div id="score">Score: 0</div>
+    <script>
+      let score=0,time=30,interval;const timeEl=document.getElementById('time');function gen(d){if(d==='easy')return {a:rand(1,10),b:rand(1,10),op:'+'};if(d==='medium')return {a:rand(2,20),b:rand(2,20),op:Math.random()<0.5?'+':'-'};return {a:rand(2,12),b:rand(2,12),op:['+','-','*'][Math.floor(Math.random()*3)]}}
+      function rand(a,b){return Math.floor(Math.random()*(b-a+1))+a}
+      function renderProblem(){const d=document.getElementById('diff').value;const p=gen(d);window._current=p;document.getElementById('problem').textContent=`${p.a} ${p.op} ${p.b}`}
+      document.getElementById('submit').onclick=()=>{const ans=Number(document.getElementById('answer').value);const p=window._current;let correct=false; if(p.op==='+') correct=ans===p.a+p.b; if(p.op==='-') correct=ans===p.a-p.b; if(p.op==='*') correct=ans===p.a*p.b; if(correct){score++;document.getElementById('score').textContent='Score: '+score} document.getElementById('answer').value=''; renderProblem()}
+      function tick(){time--;timeEl.textContent=time; if(time<=0){clearInterval(interval);alert('Time up! Score: '+score)}}
+      renderProblem();interval=setInterval(tick,1000);
+    </script>
+  </body>
+</html>

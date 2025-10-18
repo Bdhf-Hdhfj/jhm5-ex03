@@ -9,3 +9,46 @@ App#2: todo-local - 一個待辦事項（To-Do List）應用程式，使用瀏�
 App#3: todo-cloud - 一個雲端版待辦事項應用程式，使用 Cloudflare KV 儲存資料。功能與 todo-local 相似，但資料儲存在雲端，可以跨裝置同步。透過 API 端點與 Cloudflare Worker 後端通訊，實現新增、讀取、更新和刪除（CRUD）待辦事項的功能。支援多使用者，每個使用者有獨立的待辦事項清單。
 
 App#4: mathgame - 一個限時反應數學遊戲應用程式，連續快速產生數學題目（加減乘除）測試使用者的反應速度和計算能力。可以選擇難度等級（簡單、中等、困難），遊戲在限定時間內進行，挑戰玩家在時間內答對最多題目。使用 Cloudflare KV 儲存遊戲記錄和高分排行榜。介面顯示當前題目、倒數計時器、目前分數和連續答對次數，並在答題後立即顯示正確或錯誤的回饋，答錯時扣分或結束遊戲。
+
+部署與 KV 綁定
+----------------
+
+這個專案示範如何使用 asset-directory 提供靜態資源，並在 Worker 中同時提供 API 與 Cloudflare KV 的範例用法。若要在 Cloudflare 上部署並啟用雲端功能，請在 Wrangler 配置中綁定 KV 命名空間。例如在 `wrangler.toml` 或 `wrangler.jsonc` 中新增：
+
+```toml
+# 範例（wrangler.toml）
+name = "jhm5-ex03"
+main = "src/index.ts"
+compatibility_date = "2025-09-20"
+
+[kv_namespaces]
+bindings = [
+	{ binding = "TODOS", id = "<your-todos-namespace-id>" },
+	{ binding = "SCORES", id = "<your-scores-namespace-id>" }
+]
+```
+
+或者在 `wrangler.jsonc` 中加入：
+
+```jsonc
+"kv_namespaces": [
+	{ "binding": "TODOS", "id": "<your-todos-namespace-id>" },
+	{ "binding": "SCORES", "id": "<your-scores-namespace-id>" }
+]
+```
+
+本機測試
+-------
+
+在本機測試 Worker 與靜態頁面：
+
+1. 安裝依賴並啟動 dev 伺服器：
+
+```bash
+npm install
+npm run dev
+```
+
+2. 開啟瀏覽器並前往 http://localhost:8787/ 查看主選單；點選 `Todo (Cloud)` 或 `Math Game` 等會嘗試呼叫後端 API。如果使用 KV 功能，請確保在 Wrangler 中已正確綁定命名空間（並在 Cloudflare 帳號建立命名空間後填入 id）。
+
+注意：本範例的 TypeScript 定義檔 `worker-configuration.d.ts` 是由 `wrangler types` 產生的；若你新增了 KV binding，建議執行 `npm run cf-typegen` 來更新類型定義。

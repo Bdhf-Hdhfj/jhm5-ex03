@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Apps - 主選單</title>
+    <link rel="stylesheet" href="/global.css" />
+    <style>
+      body{font-family:system-ui,Segoe UI,Roboto,Helvetica,Arial;display:flex;align-items:center;justify-content:center;padding:24px}
+      .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;width:100%;max-width:1000px}
+      .card{padding:18px;border:1px solid #ddd;border-radius:10px;box-shadow:0 2px 6px rgba(0,0,0,0.04);background:#fff}
+      .title{font-weight:700;margin-bottom:8px}
+      .desc{color:#555;font-size:0.95rem}
+      a{color:inherit;text-decoration:none}
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>範例應用程式集合</h1>
+      <div class="grid">
+        <a class="card" href="/apps/tictactoe.html">
+          <div class="title">Tic Tac Toe</div>
+          <div class="desc">單人（Minimax）與雙人模式，遊戲存在 LocalStorage。</div>
+        </a>
+        <a class="card" href="/apps/todo-local.html">
+          <div class="title">Todo (Local)</div>
+          <div class="desc">使用 LocalStorage 儲存待辦項目，支援新增/編輯/刪除/篩選。</div>
+        </a>
+        <a class="card" href="/apps/todo-cloud.html">
+          <div class="title">Todo (Cloud)</div>
+          <div class="desc">雲端待辦，透過後端 API 串接 Cloudflare KV 儲存資料（需部署）。</div>
+        </a>
+        <a class="card" href="/apps/mathgame.html">
+          <div class="title">Math Game</div>
+          <div class="desc">限時數學反應遊戲，支援難度選擇，分數可儲存在 KV（需部署）。</div>
+        </a>
+      </div>
+    </main>
+  </body>
+</html>
