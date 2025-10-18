@@ -66,7 +66,17 @@
             border-radius: 12px;
             box-shadow: 0 4px 8px rgba(0,0,0,0.05);
         }
-        
+
+        .question-area {
+            width: 100%;
+            justify-content: space-between;
+            margin-bottom: 25px;
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 12px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+        }
+
     </style>
 </head>
 <body>
@@ -82,10 +92,53 @@
                 <!-- 問題將動態生成 -->
             </div>
             <div class="game-info">
+                <button id="A-A">開始遊戲</button>
+            </div>
+            <div class="game-info">
                 <div>時間: <span id="time">60</span> 秒</div>
                 <div>分數: <span id="score">0</span></div>
             </div>
         </div>
     </div>
+    <script>
+        // 這裡將包含遊戲的JavaScript邏輯
+        function generateQuestion() {
+            // 生成隨機數學問題的邏輯
+            let num1, num2, correctAnswer, qn;
+            switch (currentOperation) {
+                case 'addition':
+                    num1 = Math.floor(Math.random() * 100) + 1;
+                    num2 = Math.floor(Math.random() * 100) + 1;
+                    correctAnswer = num1 + num2;
+                    qn = `${num1} + ${num2} = ?`;
+                    break;
+                case 'subtraction':
+                    num1 = Math.floor(Math.random() * 100) + 1;
+                    num2 = Math.floor(Math.random() * 100) + 1;
+                    correctAnswer = num1 - num2;
+                    qn = `${num1} - ${num2} = ?`;
+                    break;
+            
+                case 'multiplication':
+                    num1 = Math.floor(Math.random() * 100) + 1;
+                    num2 = Math.floor(Math.random() * 100) + 1;
+                    correctAnswer = num1 * num2;
+                    qn = `${num1} × ${num2} = ?`;
+                    break;
+            
+                case 'division':
+                    num2 = Math.floor(Math.random() * 100) + 1;
+                    answer = Math.floor(Math.random() * 100) + 1;
+                    num1 = num2 * correctAnswer;
+                    qn = `${num1} ÷ ${num2} = ?`;
+                    break;
+            }
+        }
+        
+        document.getElementById('A-A').addEventListener('click', function() {
+            alert('遊戲開始！');
+            // 這裡可以添加更多遊戲邏輯
+        });
+    </script>
 </body>
 </html>
