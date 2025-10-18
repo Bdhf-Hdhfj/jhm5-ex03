@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="zh-TW"> <!-- 繁中 -->
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>數學反應挑戰</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            display: flex;
+            padding: 20px;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background-color: #6CC9FF;
+        }
+
+        h1 {
+            font-size: 2.8rem;
+            margin-bottom: 5px;
+            letter-spacing: 2px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+            background: rgba(255, 255, 255, 0.92);
+            border-radius: 20px;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        header {
+            background: #4a6fc7;
+            color: white;
+            text-align: center;
+            padding: 25px 20px;
+            position: relative;
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.8;
+        }
+
+        .game-area {
+            display: flex;
+            padding: 30px;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .game-info {
+            width: 100%;
+            justify-content: space-between;
+            margin-bottom: 25px;
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 12px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+        }
+        
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>數學反應挑戰</h1>
+            <div class="subtitle">測試你的數學反應速度！</div>
+        </header>
+
+        <div class="game-area">
+            <!-- 遊戲內容將放在這裡 -->
+            <div class="question-area">
+                <!-- 問題將動態生成 -->
+            </div>
+            <div class="game-info">
+                <div>時間: <span id="time">60</span> 秒</div>
+                <div>分數: <span id="score">0</span></div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
