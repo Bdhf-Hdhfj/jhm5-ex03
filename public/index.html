@@ -15,26 +15,43 @@
     </style>
   </head>
   <body>
-    <main>
-      <h1>範例應用程式集合</h1>
+    <header class="site-header">
+      <div class="container" style="display:flex;align-items:center;gap:12px">
+        <div class="logo">Apps</div>
+        <nav aria-label="主選單">
+          <!-- placeholder nav -->
+        </nav>
+      </div>
+    </header>
+
+    <main class="container" style="padding-top:20px">
+      <h1 class="mb-12">範例應用程式集合</h1>
       <div class="grid">
         <a class="card" href="/apps/tictactoe.html">
+          <div class="app-icon">TT</div>
           <div class="title">Tic Tac Toe</div>
           <div class="desc">單人（Minimax）與雙人模式，遊戲存在 LocalStorage。</div>
         </a>
         <a class="card" href="/apps/todo-local.html">
+          <div class="app-icon">TL</div>
           <div class="title">Todo (Local)</div>
           <div class="desc">使用 LocalStorage 儲存待辦項目，支援新增/編輯/刪除/篩選。</div>
         </a>
         <a class="card" href="/apps/todo-cloud.html">
+          <div class="app-icon">TC</div>
           <div class="title">Todo (Cloud)</div>
           <div class="desc">雲端待辦，透過後端 API 串接 Cloudflare KV 儲存資料（需部署）。</div>
         </a>
         <a class="card" href="/apps/mathgame.html">
+          <div class="app-icon">MG</div>
           <div class="title">Math Game</div>
           <div class="desc">限時數學反應遊戲，支援難度選擇，分數可儲存在 KV（需部署）。</div>
         </a>
       </div>
     </main>
+
+    <footer class="site-footer">
+      <div class="container">© 範例應用</div>
+    </footer>
   </body>
 </html>

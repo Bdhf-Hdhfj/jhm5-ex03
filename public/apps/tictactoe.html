@@ -8,13 +8,18 @@
     <style>body{font-family:system-ui;padding:20px}.board{display:grid;grid-template-columns:repeat(3,80px);gap:8px}button.cell{width:80px;height:80px;font-size:36px}</style>
   </head>
   <body>
-    <h1>Tic Tac Toe</h1>
-    <div id="status">Loading...</div>
-    <div class="board" id="board"></div>
-    <p>
-      <button id="new">New Game</button>
-      <button id="mode">Mode: Human vs Human</button>
-    </p>
+    <header class="site-header"><div class="container"><div class="logo">TicTacToe</div></div></header>
+    <main class="container">
+      <div class="card">
+        <h1>Tic Tac Toe</h1>
+        <div id="status" class="meta">Loading...</div>
+        <div class="board" id="board"></div>
+        <p>
+          <button id="new" class="btn">New Game</button>
+          <button id="mode" class="btn secondary">Mode: Human vs Human</button>
+        </p>
+      </div>
+    </main>
     <script>
       // Simple local implementation placeholder. Full minimax omitted for brevity.
       const boardEl=document.getElementById('board');const status=document.getElementById('status');let state=JSON.parse(localStorage.getItem('tictactoe')||'null')||{cells:Array(9).fill(''),xNext:true};

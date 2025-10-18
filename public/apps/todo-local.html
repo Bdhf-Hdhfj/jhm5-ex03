@@ -8,9 +8,13 @@
     <style>body{font-family:system-ui;padding:20px}ul{padding:0;list-style:none}li{padding:8px;border-bottom:1px solid #eee}</style>
   </head>
   <body>
-    <h1>Todo (Local)</h1>
-    <input id="newitem" placeholder="Add item" /> <button id="add">Add</button>
-    <ul id="list"></ul>
+    <header class="site-header"><div class="container"><div class="logo">Todo Local</div></div></header>
+    <main class="container">
+      <div class="card">
+        <h1>Todo (Local)</h1>
+        <div style="margin-top:8px"><input id="newitem" placeholder="Add item" /> <button id="add" class="btn">Add</button></div>
+        <ul id="list" class="mt-8"></ul>
+      </div>
     <script>
       const key='todo.local.items';const listEl=document.getElementById('list');function load(){return JSON.parse(localStorage.getItem(key)||'[]')}
       function save(items){localStorage.setItem(key,JSON.stringify(items))}
@@ -18,5 +22,7 @@
       document.getElementById('add').onclick=()=>{const v=document.getElementById('newitem').value.trim();if(!v) return;const items=load();items.push({text:v,done:false});save(items);document.getElementById('newitem').value='';render()}
       render();
     </script>
+    </main>
+    <footer class="site-footer"><div class="container">Local storage demo</div></footer>
   </body>
 </html>

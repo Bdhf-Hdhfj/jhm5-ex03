@@ -1,0 +1,72 @@
+
+/* Global base styles */
+:root{
+	--bg:#f6f9fc;
+	--card:#ffffff;
+	--accent:#4a6fc7;
+	--accent-2:#3b5aa6;
+	--muted:#6b7280;
+	--radius:10px;
+	--max-width:1100px;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;font-family:Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; background:var(--bg); color:#111; -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale}
+
+/* Layout helpers */
+.container{width:100%;max-width:var(--max-width);margin:0 auto;padding:20px}
+.center{display:flex;align-items:center;justify-content:center}
+
+/* Landing page grid */
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:18px}
+.card{background:var(--card);border-radius:var(--radius);padding:18px;box-shadow:0 6px 18px rgba(16,24,40,0.06);border:1px solid rgba(16,24,40,0.04);transition:transform .14s ease,box-shadow .14s ease}
+.card:hover{transform:translateY(-6px);box-shadow:0 12px 30px rgba(16,24,40,0.08)}
+.card .title{font-weight:700;margin-bottom:6px}
+.card .desc{color:var(--muted);font-size:0.95rem}
+
+/* Typography */
+h1{font-size:1.6rem;margin:0 0 12px}
+h2{font-size:1.25rem;margin:0 0 8px}
+p{margin:0 0 12px}
+
+/* Buttons */
+.btn{display:inline-flex;align-items:center;gap:8px;padding:8px 12px;background:var(--accent);color:white;border:none;border-radius:8px;cursor:pointer;font-weight:600}
+.btn:active{transform:translateY(1px)}
+.btn.secondary{background:transparent;color:var(--accent);border:1px solid rgba(74,111,199,0.12)}
+
+/* Forms / Inputs */
+input[type="text"],input[type="search"],textarea,select{padding:10px 12px;border:1px solid #e6e9ef;border-radius:8px;background:white;outline:none;font-size:1rem}
+input:focus,textarea:focus,select:focus{box-shadow:0 0 0 4px rgba(74,111,199,0.08);border-color:var(--accent)}
+
+/* App list / Todo list styles */
+ul{list-style:none;margin:0;padding:0}
+.todo-item{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border-bottom:1px solid #f1f3f6}
+.todo-item .left{display:flex;align-items:center;gap:12px}
+.todo-item .text{font-size:0.98rem}
+.todo-item.done .text{text-decoration:line-through;color:var(--muted)}
+
+/* Small meta text */
+.meta{font-size:0.85rem;color:var(--muted)}
+
+/* Responsive tweaks */
+@media (max-width:640px){
+	.container{padding:12px}
+	h1{font-size:1.4rem}
+	.grid{gap:12px}
+}
+
+/* Utility spacing */
+.mb-8{margin-bottom:8px}
+.mb-12{margin-bottom:12px}
+.mt-8{margin-top:8px}
+
+/* Header */
+.site-header{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;background:linear-gradient(90deg,var(--accent),var(--accent-2));color:white;border-radius:0 0 var(--radius) var(--radius);box-shadow:0 6px 18px rgba(74,111,199,0.12)}
+.logo{font-weight:700}
+
+/* Footer */
+.site-footer{padding:12px 20px;color:var(--muted);font-size:0.9rem;text-align:center}
+
+/* Small helper for cards in landing */
+.app-icon{width:48px;height:48px;border-radius:10px;background:linear-gradient(180deg,rgba(74,111,199,0.12),rgba(74,111,199,0.06));display:inline-flex;align-items:center;justify-content:center;font-weight:700;color:var(--accent)}
+

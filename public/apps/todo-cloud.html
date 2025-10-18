@@ -14,15 +14,19 @@
     </style>
   </head>
   <body>
-    <h1>Todo (Cloud)</h1>
-    <div>
-      <label>User ID: <input id="userid" placeholder="optional user id" /></label>
-      <div style="margin-top:8px">
-        <input id="newitem" placeholder="Add item" /> <button id="add">Add</button>
-        <span id="status" style="margin-left:12px"></span>
+    <header class="site-header"><div class="container"><div class="logo">Todo Cloud</div></div></header>
+    <main class="container">
+      <div class="card">
+        <h1>Todo (Cloud)</h1>
+        <div>
+          <label>User ID: <input id="userid" placeholder="optional user id" /></label>
+          <div style="margin-top:8px">
+            <input id="newitem" placeholder="Add item" /> <button id="add" class="btn">Add</button>
+            <span id="status" style="margin-left:12px"></span>
+          </div>
+        </div>
+        <ul id="list" class="mt-8"></ul>
       </div>
-    </div>
-    <ul id="list"></ul>
 
     <script>
       (function(){
