@@ -77,6 +77,12 @@
             box-shadow: 0 4px 8px rgba(0,0,0,0.05);
         }
 
+        .question {
+            font-size: 48px;
+            font-weight: bold;
+            margin-bottom: 16px;
+        }
+
     </style>
 </head>
 <body>
@@ -89,6 +95,8 @@
         <div class="game-area">
             <!-- 遊戲內容將放在這裡 -->
             <div class="question-area">
+                <div id="question" class="question"></div>
+                <div id="feedback" class="feedback"></div>
                 <!-- 問題將動態生成 -->
             </div>
             <div class="game-info">
@@ -98,10 +106,62 @@
                 <div>時間: <span id="time">60</span> 秒</div>
                 <div>分數: <span id="score">0</span></div>
             </div>
+            <div class="game-info">
+                <button id="start-btn">開始遊戲</button>
+            </div>
         </div>
     </div>
     <script>
         // 這裡將包含遊戲的JavaScript邏輯
+        const gameState = {
+            mode: null,
+            difficulty: 'easy',
+            currentOperation: ['addition', 'subtraction', 'multiplication', 'division'],
+            score: 0,
+            currentQuestionA: null,
+            timeRemaining: 60,
+            timer: null,
+            questionStartTime: null,
+            stats: {
+                correct: 0,
+                total: 0,
+                reactionTimes: [],
+                streak: 0,
+                maxStreak: 0
+            },
+            isPaused: false
+        };
+
+        const gameConfig = {
+            difficulty: {
+                easy: {
+                    timeLimit: 10,
+                    timePerQuestion: 10,
+                    scoreMultiplier: 1,
+                    numberRange: { min: 1, max: 20 }
+                }
+            },
+            modes: {
+                timed: { duration: 60, name: '計時挑戰' },
+                survival: { duration: null, name: '生存模式' },
+                practice: { duration: null, name: '練習模式' },
+                daily: { duration: 120, name: '每日挑戰' }
+            },
+            streakBonus: {
+                5: 1.2,
+                10: 1.5,
+                15: 2,
+                20: 2.5,
+                25: 3
+            }
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            setupDifficultyButtons();
+            // setupOperationButtons();
+            // loadHighScore();
+        });
+
         function generateQuestion() {
             // 生成隨機數學問題的邏輯
             let num1, num2, correctAnswer, qn;
@@ -128,13 +188,35 @@
             
                 case 'division':
                     num2 = Math.floor(Math.random() * 100) + 1;
-                    answer = Math.floor(Math.random() * 100) + 1;
+                    correctAnswer = Math.floor(Math.random() * 100) + 1;
                     num1 = num2 * correctAnswer;
                     qn = `${num1} ÷ ${num2} = ?`;
                     break;
             }
-        }
+
+            gameState.currentQuestionA = {
+                text: qn,
+                answer: correctAnswer,
+                currentOperation: currentOperation
+            };
+        };
         
+        function displayQuestion() {
+            document.getElementById('question').textContent = gameState.currentQuestionA.text;
+            document.getElementById('feedback').textContent = '';
+            document.getElementById('feedback').className = 'feedback';
+        }
+
+        function setupDifficultyButtons() {
+            document.querySelectorAll('[data-difficulty]').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    document.querySelectorAll('[data-difficulty]').forEach(b => b.classList.remove('active'));
+                    e.target.classList.add('active');
+                    gameState.difficulty = e.target.dataset.difficulty;
+                });
+            });
+        }
+
         document.getElementById('A-A').addEventListener('click', function() {
             alert('遊戲開始！');
             // 這裡可以添加更多遊戲邏輯
