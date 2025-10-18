@@ -32,8 +32,8 @@ bindings = [
 
 ```jsonc
 "kv_namespaces": [
-	{ "binding": "TODOS", "id": "<your-todos-namespace-id>" },
-	{ "binding": "SCORES", "id": "<your-scores-namespace-id>" }
+	{ "binding": "TODOS", "id": "4c565db994ac47e9b25b034439e5de4f" },
+	{ "binding": "SCORES", "id": "070f4f3b0cc34dc4bb83c5b9e23237a3" }
 ]
 ```
 
