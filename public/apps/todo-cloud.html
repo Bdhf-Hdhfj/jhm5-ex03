@@ -17,11 +17,12 @@
     <header class="site-header"><div class="container"><div class="logo">Todo Cloud</div></div></header>
     <main class="container">
       <div class="card">
-        <h1>Todo (Cloud)</h1>
+        <h1>待辦（雲端）</h1>
+        <p><button id="home" class="btn secondary">返回首頁</button></p>
         <div>
-          <label>User ID: <input id="userid" placeholder="optional user id" /></label>
+          <label>使用者 ID： <input id="userid" placeholder="可選的使用者 ID" /></label>
           <div style="margin-top:8px">
-            <input id="newitem" placeholder="Add item" /> <button id="add" class="btn">Add</button>
+            <input id="newitem" placeholder="新增項目" /> <button id="add" class="btn">新增</button>
             <span id="status" style="margin-left:12px"></span>
           </div>
         </div>
@@ -44,26 +45,27 @@
           return res.json();
         }
 
-        async function load(){ setStatus('loading...'); try{ const items = await api(); setStatus(''); return items }catch(e){ setStatus('error'); console.error(e); return [] } }
+  async function load(){ setStatus('讀取中...'); try{ const items = await api(); setStatus(''); return items }catch(e){ setStatus('錯誤'); console.error(e); return [] } }
 
-        async function create(text){ setStatus('saving...'); try{ const it = await api('', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ text }) }); setStatus(''); return it }catch(e){ setStatus('error'); console.error(e); throw e } }
+  async function create(text){ setStatus('儲存中...'); try{ const it = await api('', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ text }) }); setStatus(''); return it }catch(e){ setStatus('錯誤'); console.error(e); throw e } }
 
-        async function remove(id){ setStatus('removing...'); try{ await api('/'+id, { method: 'DELETE' }); setStatus(''); }catch(e){ setStatus('error'); console.error(e); throw e } }
+  async function remove(id){ setStatus('刪除中...'); try{ await api('/'+id, { method: 'DELETE' }); setStatus(''); }catch(e){ setStatus('錯誤'); console.error(e); throw e } }
 
-        async function toggle(id){ setStatus('saving...'); try{ const it = await api('/'+id, { method: 'PATCH' }); setStatus(''); return it }catch(e){ setStatus('error'); console.error(e); throw e } }
+  async function toggle(id){ setStatus('儲存中...'); try{ const it = await api('/'+id, { method: 'PATCH' }); setStatus(''); return it }catch(e){ setStatus('錯誤'); console.error(e); throw e } }
 
         async function render(){ const items = await load(); listEl.innerHTML = ''; items.forEach(it => {
           const li = document.createElement('li');
           const text = document.createElement('span'); text.textContent = (it.done? '✅ ':'') + it.text;
           const meta = document.createElement('span'); meta.className='meta';
           const btns = document.createElement('span');
-          const toggleBtn = document.createElement('button'); toggleBtn.textContent = it.done? 'Undo':'Done'; toggleBtn.onclick = async ()=>{ await toggle(it.id); render() };
-          const delBtn = document.createElement('button'); delBtn.textContent = 'Delete'; delBtn.onclick = async ()=>{ await remove(it.id); render() };
+          const toggleBtn = document.createElement('button'); toggleBtn.textContent = it.done? '取消完成':'完成'; toggleBtn.onclick = async ()=>{ await toggle(it.id); render() };
+          const delBtn = document.createElement('button'); delBtn.textContent = '刪除'; delBtn.onclick = async ()=>{ await remove(it.id); render() };
           btns.appendChild(toggleBtn); btns.appendChild(delBtn);
           li.appendChild(text); li.appendChild(btns);
           listEl.appendChild(li);
         }) }
 
+        document.getElementById('home').onclick = () => { location.href = '/' }
         document.getElementById('add').addEventListener('click', async ()=>{
           const v = document.getElementById('newitem').value.trim(); if(!v) return; try{ await create(v); document.getElementById('newitem').value=''; render(); }catch(e){}
         });

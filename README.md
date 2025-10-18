@@ -52,3 +52,28 @@ npm run dev
 2. 開啟瀏覽器並前往 http://localhost:8787/ 查看主選單；點選 `Todo (Cloud)` 或 `Math Game` 等會嘗試呼叫後端 API。如果使用 KV 功能，請確保在 Wrangler 中已正確綁定命名空間（並在 Cloudflare 帳號建立命名空間後填入 id）。
 
 注意：本範例的 TypeScript 定義檔 `worker-configuration.d.ts` 是由 `wrangler types` 產生的；若你新增了 KV binding，建議執行 `npm run cf-typegen` 來更新類型定義。
+
+排行榜（Leaderboard）說明
+-------------------------
+
+Math Game 的排行榜會優先嘗試使用 Cloudflare KV（命名空間 `SCORES`），並提供以下 API：
+
+- GET /api/leaderboard  — 取得排行榜（JSON 陣列，依分數降冪排序）
+- POST /api/leaderboard — 新增一筆排行榜紀錄，body 為 { name, score }
+
+如果未綁定 `SCORES`，Math Game 會自動退回使用 localStorage 儲存排行榜（key: `math.leaderboard`）。在本機測試時可以：
+
+1. 在本機 POST 範例分數：
+
+```bash
+curl -X POST http://localhost:8787/api/leaderboard -H 'Content-Type: application/json' -d '{"name":"測試玩家","score":42}'
+```
+
+2. 取得排行榜：
+
+```bash
+curl http://localhost:8787/api/leaderboard
+```
+
+這兩個指令可以用來驗證你的 dev server 是否已經正確綁定 KV 並能夠儲存/讀取排行榜資料。
+

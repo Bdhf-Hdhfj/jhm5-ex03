@@ -103,6 +103,33 @@ export default {
 					return new Response(JSON.stringify(rows), { headers: { 'Content-Type': 'application/json' } });
 				}
 			}
+
+			// Leaderboard API (GET list, POST add). Uses SCORES KV if available.
+			if (url.pathname.startsWith('/api/leaderboard')) {
+				if (!(env as any).SCORES) {
+					return new Response(JSON.stringify({ error: 'KV SCORES not bound' }), { status: 501, headers: { 'Content-Type': 'application/json' } });
+				}
+
+				if (request.method === 'GET') {
+					const list = await (env as any).SCORES.list({ prefix: '' });
+					const items = await Promise.all(list.keys.map(async (k: any) => {
+						const raw = await (env as any).SCORES.get(k.name);
+						try { return JSON.parse(raw || 'null'); } catch { return null }
+					}));
+					// items may be objects { name, score, ts }
+					const filtered = items.filter(Boolean).sort((a: any,b: any)=> (b.score||0) - (a.score||0));
+					return new Response(JSON.stringify(filtered), { headers: { 'Content-Type': 'application/json' } });
+				}
+
+				if (request.method === 'POST') {
+					const body = await request.json().catch(()=>({} as any)) as any;
+					const entry = { name: String(body.name || '匿名'), score: Number(body.score || 0), ts: Date.now() };
+					// store under timestamp key to allow duplicates
+					const id = 'lb_' + Date.now().toString(36) + Math.random().toString(36).slice(2,6);
+					await (env as any).SCORES.put(id, JSON.stringify(entry));
+					return new Response(JSON.stringify(entry), { status: 201, headers: { 'Content-Type': 'application/json' } });
+				}
+			}
 		}
 
 		// If the request is for a .html file, try the no-extension path first to avoid redirects

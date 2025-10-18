@@ -11,21 +11,162 @@
     <header class="site-header"><div class="container"><div class="logo">Math Game</div></div></header>
     <main class="container">
       <div class="card">
-        <h1>Math Game</h1>
-        <label>Difficulty: <select id="diff"><option value="easy">Easy</option><option value="medium">Medium</option><option value="hard">Hard</option></select></label>
-        <div id="timer">Time: <span id="time">30</span>s</div>
+        <h1>數學遊戲</h1>
+        <p><button id="home" class="btn secondary">返回首頁</button></p>
+        <label>難度： <select id="diff"><option value="easy">簡單</option><option value="medium">中等</option><option value="hard">困難</option></select></label>
+        <div id="timer">時間： <span id="time">30</span> 秒</div>
+        <div style="margin-top:8px">
+          <button id="pause" class="btn">暫停</button>
+          <button id="resume" class="btn" disabled>繼續</button>
+          <button id="end" class="btn secondary">結束遊戲</button>
+          <button id="restart" class="btn" disabled>重新開始</button>
+        </div>
         <div id="problem">—</div>
-        <input id="answer" /><button id="submit" class="btn">Submit</button>
-        <div id="score">Score: 0</div>
+        <input id="answer" placeholder="輸入答案" /> <button id="submit" class="btn">提交</button>
+        <div id="score">分數：0</div>
+        <div class="mt-4">
+          <h3>排行榜</h3>
+          <ol id="leaderboard"></ol>
+          <p><button id="clear-board" class="btn secondary">清除排行榜</button></p>
+        </div>
       </div>
     </main>
     <script>
-      let score=0,time=30,interval;const timeEl=document.getElementById('time');function gen(d){if(d==='easy')return {a:rand(1,10),b:rand(1,10),op:'+'};if(d==='medium')return {a:rand(2,20),b:rand(2,20),op:Math.random()<0.5?'+':'-'};return {a:rand(2,12),b:rand(2,12),op:['+','-','*'][Math.floor(Math.random()*3)]}}
-      function rand(a,b){return Math.floor(Math.random()*(b-a+1))+a}
-      function renderProblem(){const d=document.getElementById('diff').value;const p=gen(d);window._current=p;document.getElementById('problem').textContent=`${p.a} ${p.op} ${p.b}`}
-      document.getElementById('submit').onclick=()=>{const ans=Number(document.getElementById('answer').value);const p=window._current;let correct=false; if(p.op==='+') correct=ans===p.a+p.b; if(p.op==='-') correct=ans===p.a-p.b; if(p.op==='*') correct=ans===p.a*p.b; if(correct){score++;document.getElementById('score').textContent='Score: '+score} document.getElementById('answer').value=''; renderProblem()}
-      function tick(){time--;timeEl.textContent=time; if(time<=0){clearInterval(interval);alert('Time up! Score: '+score)}}
-      renderProblem();interval=setInterval(tick,1000);
+      let score = 0, time = 30, interval;
+      const timeEl = document.getElementById('time');
+
+      function rand(a,b){ return Math.floor(Math.random()*(b-a+1))+a }
+
+      // Generate problems. Ensure division yields integer answers.
+      function gen(d){
+        // helper to produce integer division pair
+        function intDivPair(minB, maxB, maxMul){
+          const b = rand(minB, maxB);
+          const mul = rand(1, maxMul);
+          return { a: b * mul, b };
+        }
+
+        if (d === 'easy') {
+          // easy: mostly add/sub, sometimes small mul/div
+          if (Math.random() < 0.7) {
+            const op = Math.random() < 0.6 ? '+' : '-';
+            return { a: rand(1,10), b: rand(1,10), op };
+          }
+          // small chance for mul/div
+          if (Math.random() < 0.5) {
+            // mul
+            return { a: rand(1,6), b: rand(1,6), op: '*' };
+          }
+          // div: ensure integer
+          return Object.assign(intDivPair(1,6,6), { op: '/' });
+        }
+
+        if (d === 'medium') {
+          // medium: mix of ops, include mul/div with moderate chance
+          const r = Math.random();
+          if (r < 0.35) return { a: rand(2,20), b: rand(2,12), op: '+' };
+          if (r < 0.7) return { a: rand(2,20), b: rand(2,12), op: '-' };
+          if (r < 0.9) return { a: rand(2,12), b: rand(2,12), op: '*' };
+          // division
+          return Object.assign(intDivPair(2,12,8), { op: '/' });
+        }
+
+        // hard: include all ops equally, ensure division integer
+        const ops = ['+','-','*','/'];
+        const op = ops[Math.floor(Math.random()*ops.length)];
+        if (op === '/'){
+          return Object.assign(intDivPair(2,20,12), { op: '/' });
+        }
+        return { a: rand(2,30), b: rand(2,20), op };
+      }
+
+      function renderProblem(){
+        const d = document.getElementById('diff').value;
+        const p = gen(d);
+        window._current = p;
+        const opSym = p.op === '/' ? '÷' : p.op;
+        document.getElementById('problem').textContent = `${p.a} ${opSym} ${p.b}`;
+      }
+
+      document.getElementById('home').onclick = () => { location.href = '/' }
+      const pauseBtn = document.getElementById('pause');
+      const resumeBtn = document.getElementById('resume');
+      const endBtn = document.getElementById('end');
+  const lbEl = document.getElementById('leaderboard');
+  const clearBoardBtn = document.getElementById('clear-board');
+  const restartBtn = document.getElementById('restart');
+
+  // LocalStorage fallback functions
+  function saveLeaderboardLocal(entries){ localStorage.setItem('math.leaderboard', JSON.stringify(entries)) }
+  function loadLeaderboardLocal(){ try{ return JSON.parse(localStorage.getItem('math.leaderboard')||'[]') }catch(e){ return [] } }
+  function renderLeaderboardLocal(){ const items = loadLeaderboardLocal(); lbEl.innerHTML = ''; items.slice(0,10).forEach(it=>{ const li=document.createElement('li'); li.textContent = `${it.name} — ${it.score} 分 (${new Date(it.ts).toLocaleString()})`; lbEl.appendChild(li) }) }
+
+      // Prefer server-side leaderboard via API; fallback to local storage
+      async function fetchLeaderboardServer(){
+        try{
+          const res = await fetch('/api/leaderboard');
+          if (!res.ok) throw new Error('not ok');
+          const items = await res.json();
+          lbEl.innerHTML = '';
+          items.slice(0,10).forEach((it)=>{ const li=document.createElement('li'); li.textContent = `${it.name} — ${it.score} 分 (${new Date(it.ts).toLocaleString()})`; lbEl.appendChild(li) });
+          return true;
+        }catch(e){ return false }
+      }
+
+      async function postLeaderboardServer(entry){
+        try{
+          const res = await fetch('/api/leaderboard', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(entry) });
+          if (!res.ok) throw new Error('not ok');
+          return true;
+        }catch(e){ return false }
+      }
+
+  function resetGame(){ score = 0; time = 30; document.getElementById('score').textContent = '分數：' + score; document.getElementById('time').textContent = time; }
+
+  function startTimer(){ if (!interval) interval = setInterval(tick, 1000); pauseBtn.disabled = false; resumeBtn.disabled = true; restartBtn.disabled = true; }
+
+  async function endGame(save=true){ clearInterval(interval); interval = null; pauseBtn.disabled = true; resumeBtn.disabled = true; restartBtn.disabled = false; if (save){ const name = prompt('輸入名稱以儲存分數（取消則不儲存）'); if (name){ const entry = { name: name.trim() || '匿名', score, ts: Date.now() };
+            // try server first
+            const ok = await postLeaderboardServer(entry);
+            if (ok){ // refresh from server
+              await fetchLeaderboardServer();
+              alert('遊戲結束，分數已儲存至伺服器');
+            } else {
+              // fallback to local
+              const entries = loadLeaderboardLocal(); entries.push(entry); entries.sort((a,b)=>b.score-a.score); saveLeaderboardLocal(entries); renderLeaderboardLocal(); alert('遊戲結束，分數已儲存（本機）');
+            }
+          } else { alert('遊戲結束'); } } else { alert('遊戲結束'); } }
+
+      pauseBtn.onclick = () => { if (interval){ clearInterval(interval); interval = null; pauseBtn.disabled = true; resumeBtn.disabled = false; } }
+      resumeBtn.onclick = () => { if (!interval){ interval = setInterval(tick, 1000); pauseBtn.disabled = false; resumeBtn.disabled = true; } }
+      endBtn.onclick = () => endGame(true);
+      restartBtn.onclick = () => { resetGame(); renderProblem(); startTimer(); }
+      clearBoardBtn.onclick = async () => {
+        if (!confirm('確定要清除本機排行榜？')) return;
+        saveLeaderboardLocal([]);
+        // try to refresh server leaderboard, fallback to local
+        const ok = await fetchLeaderboardServer(); if (!ok) renderLeaderboardLocal();
+      }
+
+      document.getElementById('submit').onclick = () => {
+        const ans = Number(document.getElementById('answer').value);
+        const p = window._current;
+        let correct = false;
+        if (p.op === '+') correct = ans === p.a + p.b;
+        if (p.op === '-') correct = ans === p.a - p.b;
+        if (p.op === '*') correct = ans === p.a * p.b;
+        if (p.op === '/') correct = ans === p.a / p.b; // division was generated to be integer
+        if (correct) { score++; document.getElementById('score').textContent = '分數：' + score }
+        document.getElementById('answer').value = '';
+        renderProblem();
+      }
+
+      function tick(){ time--; timeEl.textContent = time; if (time <= 0){ endGame(true) } }
+
+  // Try server leaderboard first; fallback to local
+  (async ()=>{ const ok = await fetchLeaderboardServer(); if (!ok) renderLeaderboardLocal(); })();
+      renderProblem();
+      interval = setInterval(tick, 1000);
     </script>
   </body>
 </html>

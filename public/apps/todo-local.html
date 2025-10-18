@@ -11,11 +11,13 @@
     <header class="site-header"><div class="container"><div class="logo">Todo Local</div></div></header>
     <main class="container">
       <div class="card">
-        <h1>Todo (Local)</h1>
-        <div style="margin-top:8px"><input id="newitem" placeholder="Add item" /> <button id="add" class="btn">Add</button></div>
+        <h1>待辦（本機）</h1>
+        <p><button id="home" class="btn secondary">返回首頁</button></p>
+        <div style="margin-top:8px"><input id="newitem" placeholder="新增項目" /> <button id="add" class="btn">新增</button></div>
         <ul id="list" class="mt-8"></ul>
       </div>
     <script>
+      document.getElementById('home').onclick = () => { location.href = '/' }
       const key='todo.local.items';const listEl=document.getElementById('list');function load(){return JSON.parse(localStorage.getItem(key)||'[]')}
       function save(items){localStorage.setItem(key,JSON.stringify(items))}
       function render(){const items=load();listEl.innerHTML='';items.forEach((it,i)=>{const li=document.createElement('li');li.textContent=(it.done? '✅ ':'')+it.text;li.onclick=()=>{items[i].done=!items[i].done;save(items);render()};listEl.appendChild(li)})}

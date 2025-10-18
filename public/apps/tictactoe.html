@@ -11,23 +11,128 @@
     <header class="site-header"><div class="container"><div class="logo">TicTacToe</div></div></header>
     <main class="container">
       <div class="card">
-        <h1>Tic Tac Toe</h1>
-        <div id="status" class="meta">Loading...</div>
+  <h1>井字遊戲</h1>
+  <p><button id="home" class="btn secondary">返回首頁</button></p>
+  <div id="status" class="meta">載入中…</div>
         <div class="board" id="board"></div>
         <p>
-          <button id="new" class="btn">New Game</button>
-          <button id="mode" class="btn secondary">Mode: Human vs Human</button>
+          <button id="new" class="btn">開始新遊戲</button>
+          <button id="mode" class="btn secondary">模式：Human vs Human</button>
         </p>
       </div>
     </main>
     <script>
-      // Simple local implementation placeholder. Full minimax omitted for brevity.
-      const boardEl=document.getElementById('board');const status=document.getElementById('status');let state=JSON.parse(localStorage.getItem('tictactoe')||'null')||{cells:Array(9).fill(''),xNext:true};
-      function render(){boardEl.innerHTML='';state.cells.forEach((v,i)=>{const b=document.createElement('button');b.className='cell';b.textContent=v;b.onclick=()=>{if(v||winner())return;state.cells[i]=state.xNext?'X':'O';state.xNext=!state.xNext;save();render();};boardEl.appendChild(b)});status.textContent=winner()?('Winner: '+winner()):('Next: '+(state.xNext?'X':'O'));}
-      function winner(){const s=state.cells;const lines=[[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];for(const l of lines){const [a,b,c]=l; if(s[a]&&s[a]===s[b]&&s[a]===s[c]) return s[a]} return s.every(Boolean)?'Draw':null}
-      function save(){localStorage.setItem('tictactoe',JSON.stringify(state))}
-      document.getElementById('new').onclick=()=>{state={cells:Array(9).fill(''),xNext:true};save();render()}
+      // Tic Tac Toe with single-player (Human vs AI) option.
+      const boardEl = document.getElementById('board');
+      const status = document.getElementById('status');
+      const modeBtn = document.getElementById('mode');
+      const newBtn = document.getElementById('new');
+
+      // state: cells[9], xNext (true if X's turn), mode: 'hvh' or 'hva', aiThinking
+      let state = JSON.parse(localStorage.getItem('tictactoe') || 'null') || { cells: Array(9).fill(''), xNext: true, mode: 'hvh', aiThinking: false };
+
+      function save() { localStorage.setItem('tictactoe', JSON.stringify(state)); }
+
+      function winner() {
+        const s = state.cells;
+        const lines = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+        for (const l of lines) { const [a,b,c] = l; if (s[a] && s[a] === s[b] && s[a] === s[c]) return s[a]; }
+        return s.every(Boolean) ? 'Draw' : null;
+      }
+
+      function render() {
+        boardEl.innerHTML = '';
+        state.cells.forEach((v,i) => {
+          const b = document.createElement('button');
+          b.className = 'cell';
+          b.textContent = v;
+          b.disabled = !!v || !!winner() || state.aiThinking;
+          b.onclick = async () => {
+            if (b.disabled) return;
+            // Human move
+            state.cells[i] = state.xNext ? 'X' : 'O';
+            state.xNext = !state.xNext;
+            save();
+            render();
+            // If single-player and it's AI's turn, let AI move
+            if (state.mode === 'hva' && !winner() && !state.xNext) {
+              await aiMove();
+            }
+          };
+          boardEl.appendChild(b);
+        });
+  const w = winner();
+  if (w) status.textContent = (w === 'Draw') ? '和局' : ('勝利：' + w);
+  else status.textContent = '下一步：' + (state.xNext ? 'X' : 'O');
+  modeBtn.textContent = (state.mode === 'hvh') ? '模式：人對人' : '模式：人對電腦';
+      }
+
+      function newGame() {
+        state = { cells: Array(9).fill(''), xNext: true, mode: state.mode, aiThinking: false };
+        save();
+        render();
+      }
+
+      function toggleMode() {
+        state.mode = (state.mode === 'hvh') ? 'hva' : 'hvh';
+        // reset game when switching modes
+        newGame();
+      }
+
+      // AI helpers
+      function availableMoves(cells) { return cells.map((v,i) => v ? -1 : i).filter(i => i >= 0); }
+
+      function findWinningMove(cells, player) {
+        const mv = availableMoves(cells);
+        const lines = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+        for (const m of mv) {
+          const copy = cells.slice(); copy[m] = player;
+          for (const l of lines) { const [a,b,c] = l; if (copy[a] && copy[a] === copy[b] && copy[a] === copy[c]) return m; }
+        }
+        return -1;
+      }
+
+      function aiChooseMove() {
+        const cells = state.cells;
+        // AI is O
+        // 1) Win if possible
+        let m = findWinningMove(cells, 'O'); if (m >= 0) return m;
+        // 2) Block X
+        m = findWinningMove(cells, 'X'); if (m >= 0) return m;
+        // 3) Take center
+        if (!cells[4]) return 4;
+        // 4) Take a corner
+        const corners = [0,2,6,8].filter(i => !cells[i]); if (corners.length) return corners[Math.floor(Math.random()*corners.length)];
+        // 5) Fallback to any side/random
+        const moves = availableMoves(cells); return moves.length ? moves[Math.floor(Math.random()*moves.length)] : -1;
+      }
+
+      async function aiMove() {
+        const idx = aiChooseMove();
+        if (idx < 0) return;
+        state.aiThinking = true; save(); render();
+        // simulated thinking
+        await new Promise(r => setTimeout(r, 250 + Math.random()*300));
+        state.cells[idx] = state.xNext ? 'X' : 'O';
+        state.xNext = !state.xNext;
+        state.aiThinking = false;
+        save();
+        render();
+      }
+
+  // wire buttons
+  document.getElementById('home').onclick = () => { location.href = '/' }
+  newBtn.onclick = () => newGame();
+  modeBtn.onclick = () => { toggleMode(); };
+
+      // initialize
       render();
+
+      // If loading state is single-player and it's AI's turn, let AI move
+      if (state.mode === 'hva' && !winner() && !state.xNext) {
+        // schedule next tick so render completes
+        setTimeout(() => aiMove(), 50);
+      }
     </script>
   </body>
 </html>
