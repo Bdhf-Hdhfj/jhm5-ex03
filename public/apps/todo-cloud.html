@@ -1,3 +1,4 @@
+
 <!doctype html>
 <html lang="zh-Hant">
   <head>
@@ -5,21 +6,66 @@
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>Todo - Cloud</title>
     <link rel="stylesheet" href="/global.css" />
-    <style>body{font-family:system-ui;padding:20px}ul{padding:0;list-style:none}li{padding:8px;border-bottom:1px solid #eee}</style>
+    <style>
+      body{font-family:system-ui;padding:20px}
+      ul{padding:0;list-style:none}
+      li{padding:8px;border-bottom:1px solid #eee;display:flex;justify-content:space-between;align-items:center}
+      .meta{color:#666;font-size:0.9rem}
+    </style>
   </head>
   <body>
     <h1>Todo (Cloud)</h1>
     <div>
-      <input id="newitem" placeholder="Add item" /> <button id="add">Add</button>
+      <label>User ID: <input id="userid" placeholder="optional user id" /></label>
+      <div style="margin-top:8px">
+        <input id="newitem" placeholder="Add item" /> <button id="add">Add</button>
+        <span id="status" style="margin-left:12px"></span>
+      </div>
     </div>
     <ul id="list"></ul>
+
     <script>
-      const base='/api/todos';async function load(){const r=await fetch(base);return r.json()}async function add(text){await fetch(base,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text})})}
-      async function remove(id){await fetch(base+'/'+id,{method:'DELETE'})}
-      async function toggle(id){await fetch(base+'/'+id,{method:'PATCH'})}
-      async function render(){const items=await load();const ul=document.getElementById('list');ul.innerHTML='';items.forEach(it=>{const li=document.createElement('li');li.textContent=(it.done? '✅ ':'')+it.text;li.onclick=()=>toggle(it.id).then(render);const del=document.createElement('button');del.textContent='Delete';del.onclick=(e)=>{e.stopPropagation();remove(it.id).then(render)};li.appendChild(del);ul.appendChild(li)})}
-      document.getElementById('add').onclick=async()=>{const v=document.getElementById('newitem').value.trim();if(!v)return;await add(v);document.getElementById('newitem').value='';render()}
-      render();
+      (function(){
+        const apiBase = '/api/todos';
+        const statusEl = document.getElementById('status');
+        const listEl = document.getElementById('list');
+
+        function setStatus(t){ statusEl.textContent = t || '' }
+
+        async function api(path='', opts={}){
+          const url = apiBase + path;
+          const res = await fetch(url, opts);
+          if (!res.ok) throw new Error('HTTP '+res.status);
+          if (res.status === 204) return null;
+          return res.json();
+        }
+
+        async function load(){ setStatus('loading...'); try{ const items = await api(); setStatus(''); return items }catch(e){ setStatus('error'); console.error(e); return [] } }
+
+        async function create(text){ setStatus('saving...'); try{ const it = await api('', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ text }) }); setStatus(''); return it }catch(e){ setStatus('error'); console.error(e); throw e } }
+
+        async function remove(id){ setStatus('removing...'); try{ await api('/'+id, { method: 'DELETE' }); setStatus(''); }catch(e){ setStatus('error'); console.error(e); throw e } }
+
+        async function toggle(id){ setStatus('saving...'); try{ const it = await api('/'+id, { method: 'PATCH' }); setStatus(''); return it }catch(e){ setStatus('error'); console.error(e); throw e } }
+
+        async function render(){ const items = await load(); listEl.innerHTML = ''; items.forEach(it => {
+          const li = document.createElement('li');
+          const text = document.createElement('span'); text.textContent = (it.done? '✅ ':'') + it.text;
+          const meta = document.createElement('span'); meta.className='meta';
+          const btns = document.createElement('span');
+          const toggleBtn = document.createElement('button'); toggleBtn.textContent = it.done? 'Undo':'Done'; toggleBtn.onclick = async ()=>{ await toggle(it.id); render() };
+          const delBtn = document.createElement('button'); delBtn.textContent = 'Delete'; delBtn.onclick = async ()=>{ await remove(it.id); render() };
+          btns.appendChild(toggleBtn); btns.appendChild(delBtn);
+          li.appendChild(text); li.appendChild(btns);
+          listEl.appendChild(li);
+        }) }
+
+        document.getElementById('add').addEventListener('click', async ()=>{
+          const v = document.getElementById('newitem').value.trim(); if(!v) return; try{ await create(v); document.getElementById('newitem').value=''; render(); }catch(e){}
+        });
+
+        render();
+      })();
     </script>
   </body>
 </html>
