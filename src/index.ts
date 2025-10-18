@@ -105,7 +105,33 @@ export default {
 			}
 		}
 
-		// Try to serve static assets by default
-		return env.ASSETS.fetch(request);
+		// If the request is for a .html file, try the no-extension path first to avoid redirects
+		if (url.pathname.endsWith('.html')) {
+			const altPath = url.pathname.replace(/\.html$/, '');
+			const origin = new URL(request.url).origin;
+			const altAbsolute = origin + altPath;
+			try {
+				const altReq = new Request(altAbsolute, { method: 'GET', headers: {} as HeadersInit });
+				const altResp = await env.ASSETS.fetch(altReq);
+				if (altResp && altResp.status === 200) return altResp;
+			} catch (e) {
+				// ignore and fall through to normal asset fetch
+			}
+		}
+		// Try to serve static assets by default; if ASSETS returns a redirect, follow it server-side
+		// Follow server-side redirects for assets (avoid returning 3xx to clients)
+		let assetResp = await env.ASSETS.fetch(request);
+		let hops = 0;
+		while (assetResp.status >= 300 && assetResp.status < 400 && hops < 2) {
+			const loc = assetResp.headers.get('Location');
+			if (!loc) break;
+			// resolve relative locations against the original request URL
+			const newUrl = new URL(loc, request.url).toString();
+			// perform a simple GET to the resolved asset path (don't forward client body)
+			const followReq = new Request(newUrl, { method: 'GET', headers: {} as HeadersInit });
+			assetResp = await env.ASSETS.fetch(followReq);
+			hops++;
+		}
+		return assetResp;
 	},
 } satisfies ExportedHandler<Env>;
